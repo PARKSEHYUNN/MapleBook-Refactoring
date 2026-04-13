@@ -10,9 +10,59 @@
  * @copyright Copyright (c) 2026 Mesbul.
  */
 
-import { AccountOUIDType, CharacterListType } from "@/types/character";
-import { NEXONOpenAPIError } from "@/types/common";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+
+import {
+  AbilityJsonType,
+  AccountAchievementType,
+  AccountOUIDType,
+  AndroidEquipmentJsonType,
+  BattlePracticeReplayIdType,
+  BattlePracticeResultType,
+  BattlePracticeSkillTimelineType,
+  BeautyEquipmentJsonType,
+  CashEquipmentJsonType,
+  CharacterBasic,
+  CharacterListType,
+  CharacterPopularity,
+  CharacterUnion,
+  CubeHistoryType,
+  DojangJsonType,
+  GuildBasicType,
+  HexaMatrixJsonType,
+  HexaStatJsonType,
+  HyperStatJsonType,
+  ItemEquipmentJsonType,
+  LinkSkillJsonType,
+  NoticeDetailType,
+  NoticeListType,
+  OtherJsonType,
+  PetJsonType,
+  PotentialHistoryType,
+  PropensityJsonType,
+  RankingAchievementType,
+  RankingDojangType,
+  RankingGuildType,
+  RankingOverallType,
+  RankingTheSeedType,
+  RankingUnionType,
+  RingReserveSkillEquipmentJsonType,
+  SetEffectJsonType,
+  SkillGradeData,
+  StarforceHistoryType,
+  StatJsonType,
+  SymbolJsonType,
+  UnionArtifactType,
+  UnionChampionType,
+  UnionRaiderType,
+  VMatrixJsonType,
+  CashShopNoticeDetailType,
+  CashShopNoticeListType,
+  EventNoticeDetailType,
+  EventNoticeListType,
+  UpdateNoticeListType,
+} from "@/types/character";
+import { NEXONOpenAPIError } from "@/types/common";
 
 const NEXON_OPEN_API_BASE_URL = "https://open.api.nexon.com";
 
@@ -82,4 +132,382 @@ export async function getCharacterList(apiKey: string) {
   });
 
   return data;
+}
+
+export async function getCharacterOcid(characterName: string) {
+  const data = await nexonFetch<{ ocid: string }>({
+    endpoint: `/maplestory/v1/id?character_name=${encodeURIComponent(characterName)}`,
+  });
+  return data.ocid;
+}
+
+export async function getCharacterBasic(ocid: string) {
+  const data = await nexonFetch<CharacterBasic>({
+    endpoint: `/maplestory/v1/character/basic?ocid=${ocid}`,
+  });
+  return data;
+}
+
+export async function getCharacterPopularity(ocid: string) {
+  const data = await nexonFetch<CharacterPopularity>({
+    endpoint: `/maplestory/v1/character/popularity?ocid=${ocid}`,
+  });
+  return data;
+}
+
+export async function getCharacterStat(ocid: string) {
+  const data = await nexonFetch<StatJsonType>({
+    endpoint: `/maplestory/v1/character/stat?ocid=${ocid}`,
+  });
+  return data;
+}
+
+export async function getCharacterUnion(ocid: string) {
+  const data = await nexonFetch<CharacterUnion>({
+    endpoint: `/maplestory/v1/user/union?ocid=${ocid}`,
+  });
+  return data;
+}
+
+export async function getCharacterDojang(ocid: string) {
+  const data = await nexonFetch<DojangJsonType>({
+    endpoint: `/maplestory/v1/character/dojang?ocid=${ocid}`,
+  });
+  return data;
+}
+
+export async function getCharacterItemEquipment(ocid: string) {
+  const data = await nexonFetch<ItemEquipmentJsonType>({
+    endpoint: `/maplestory/v1/character/item-equipment?ocid=${ocid}`,
+  });
+  return data;
+}
+
+// ─── 캐릭터 추가 정보 ───────────────────────────────────────────────────────
+
+export async function getCharacterHyperStat(ocid: string) {
+  return nexonFetch<HyperStatJsonType>({
+    endpoint: `/maplestory/v1/character/hyper-stat?ocid=${ocid}`,
+  });
+}
+
+export async function getCharacterPropensity(ocid: string) {
+  return nexonFetch<PropensityJsonType>({
+    endpoint: `/maplestory/v1/character/propensity?ocid=${ocid}`,
+  });
+}
+
+export async function getCharacterAbility(ocid: string) {
+  return nexonFetch<AbilityJsonType>({
+    endpoint: `/maplestory/v1/character/ability?ocid=${ocid}`,
+  });
+}
+
+export async function getCharacterCashItemEquipment(ocid: string) {
+  return nexonFetch<CashEquipmentJsonType>({
+    endpoint: `/maplestory/v1/character/cashitem-equipment?ocid=${ocid}`,
+  });
+}
+
+export async function getCharacterSymbolEquipment(ocid: string) {
+  return nexonFetch<SymbolJsonType>({
+    endpoint: `/maplestory/v1/character/symbol-equipment?ocid=${ocid}`,
+  });
+}
+
+export async function getCharacterSetEffect(ocid: string) {
+  return nexonFetch<SetEffectJsonType>({
+    endpoint: `/maplestory/v1/character/set-effect?ocid=${ocid}`,
+  });
+}
+
+export async function getCharacterBeautyEquipment(ocid: string) {
+  return nexonFetch<BeautyEquipmentJsonType>({
+    endpoint: `/maplestory/v1/character/beauty-equipment?ocid=${ocid}`,
+  });
+}
+
+export async function getCharacterAndroidEquipment(ocid: string) {
+  return nexonFetch<AndroidEquipmentJsonType>({
+    endpoint: `/maplestory/v1/character/android-equipment?ocid=${ocid}`,
+  });
+}
+
+export async function getCharacterPetEquipment(ocid: string) {
+  return nexonFetch<PetJsonType>({
+    endpoint: `/maplestory/v1/character/pet-equipment?ocid=${ocid}`,
+  });
+}
+
+export type CharacterSkillGrade =
+  | "0"
+  | "1"
+  | "1.5"
+  | "2"
+  | "2.5"
+  | "3"
+  | "4"
+  | "hyperpassive"
+  | "hyperactive"
+  | "5"
+  | "6";
+
+export async function getCharacterSkill(ocid: string, grade: CharacterSkillGrade) {
+  return nexonFetch<SkillGradeData>({
+    endpoint: `/maplestory/v1/character/skill?ocid=${ocid}&character_skill_grade=${grade}`,
+  });
+}
+
+export async function getCharacterLinkSkill(ocid: string) {
+  return nexonFetch<LinkSkillJsonType>({
+    endpoint: `/maplestory/v1/character/link-skill?ocid=${ocid}`,
+  });
+}
+
+export async function getCharacterVMatrix(ocid: string) {
+  return nexonFetch<VMatrixJsonType>({
+    endpoint: `/maplestory/v1/character/vmatrix?ocid=${ocid}`,
+  });
+}
+
+export async function getCharacterHexaMatrix(ocid: string) {
+  return nexonFetch<HexaMatrixJsonType>({
+    endpoint: `/maplestory/v1/character/hexamatrix?ocid=${ocid}`,
+  });
+}
+
+export async function getCharacterHexaMatrixStat(ocid: string) {
+  return nexonFetch<HexaStatJsonType>({
+    endpoint: `/maplestory/v1/character/hexamatrix-stat?ocid=${ocid}`,
+  });
+}
+
+export async function getCharacterOtherStat(ocid: string) {
+  return nexonFetch<OtherJsonType>({
+    endpoint: `/maplestory/v1/character/other-stat?ocid=${ocid}`,
+  });
+}
+
+export async function getCharacterRingReserveSkillEquipment(ocid: string) {
+  return nexonFetch<RingReserveSkillEquipmentJsonType>({
+    endpoint: `/maplestory/v1/character/ring-reserve-skill-equipment?ocid=${ocid}`,
+  });
+}
+
+export async function getAccountAchievement() {
+  return nexonFetch<AccountAchievementType>({
+    endpoint: `/maplestory/v1/user/achievement`,
+  });
+}
+
+// ─── 유니온 추가 정보 ───────────────────────────────────────────────────────
+
+export async function getUnionRaider(ocid: string) {
+  return nexonFetch<UnionRaiderType>({
+    endpoint: `/maplestory/v1/user/union-raider?ocid=${ocid}`,
+  });
+}
+
+export async function getUnionArtifact(ocid: string) {
+  return nexonFetch<UnionArtifactType>({
+    endpoint: `/maplestory/v1/user/union-artifact?ocid=${ocid}`,
+  });
+}
+
+export async function getUnionChampion(ocid: string) {
+  return nexonFetch<UnionChampionType>({
+    endpoint: `/maplestory/v1/user/union-champion?ocid=${ocid}`,
+  });
+}
+
+// ─── 길드 ───────────────────────────────────────────────────────────────────
+
+export async function getGuildId(guildName: string, worldName: string) {
+  const data = await nexonFetch<{ oguild_id: string }>({
+    endpoint: `/maplestory/v1/guild/id?guild_name=${encodeURIComponent(guildName)}&world_name=${encodeURIComponent(worldName)}`,
+  });
+  return data.oguild_id;
+}
+
+export async function getGuildBasic(oguildId: string) {
+  return nexonFetch<GuildBasicType>({
+    endpoint: `/maplestory/v1/guild/basic?oguild_id=${oguildId}`,
+  });
+}
+
+// ─── 연무장 ─────────────────────────────────────────────────────────────────
+
+export async function getBattlePracticeReplayId(ocid: string) {
+  return nexonFetch<BattlePracticeReplayIdType>({
+    endpoint: `/maplestory/v1/battle-practice/replay-id?ocid=${ocid}`,
+  });
+}
+
+export async function getBattlePracticeResult(replayId: string) {
+  return nexonFetch<BattlePracticeResultType>({
+    endpoint: `/maplestory/v1/battle-practice/result?replay_id=${replayId}`,
+  });
+}
+
+export async function getBattlePracticeSkillTimeline(replayId: string, pageNo?: number) {
+  const query = new URLSearchParams({ replay_id: replayId });
+  if (pageNo !== undefined) { query.set("page_no", String(pageNo)); }
+  return nexonFetch<BattlePracticeSkillTimelineType>({
+    endpoint: `/maplestory/v1/battle-practice/skill-timeline?${query}`,
+  });
+}
+
+// ─── 확률 이력 ───────────────────────────────────────────────────────────────
+
+export async function getStarforceHistory(count: number, date?: string, cursor?: string) {
+  const query = new URLSearchParams({ count: String(count) });
+  if (date) { query.set("date", date); }
+  if (cursor) { query.set("cursor", cursor); }
+  return nexonFetch<StarforceHistoryType>({
+    endpoint: `/maplestory/v1/history/starforce?${query}`,
+  });
+}
+
+export async function getPotentialHistory(count: number, date?: string, cursor?: string) {
+  const query = new URLSearchParams({ count: String(count) });
+  if (date) { query.set("date", date); }
+  if (cursor) { query.set("cursor", cursor); }
+  return nexonFetch<PotentialHistoryType>({
+    endpoint: `/maplestory/v1/history/potential?${query}`,
+  });
+}
+
+export async function getCubeHistory(count: number, date?: string, cursor?: string) {
+  const query = new URLSearchParams({ count: String(count) });
+  if (date) { query.set("date", date); }
+  if (cursor) { query.set("cursor", cursor); }
+  return nexonFetch<CubeHistoryType>({
+    endpoint: `/maplestory/v1/history/cube?${query}`,
+  });
+}
+
+// ─── 랭킹 ───────────────────────────────────────────────────────────────────
+
+export async function getRankingOverall(
+  date: string,
+  options: { worldName?: string; worldType?: number; characterClass?: string; ocid?: string; page?: number } = {},
+) {
+  const query = new URLSearchParams({ date });
+  if (options.worldName) { query.set("world_name", options.worldName); }
+  if (options.worldType !== undefined) { query.set("world_type", String(options.worldType)); }
+  if (options.characterClass) { query.set("class", options.characterClass); }
+  if (options.ocid) { query.set("ocid", options.ocid); }
+  if (options.page !== undefined) { query.set("page", String(options.page)); }
+  return nexonFetch<RankingOverallType>({
+    endpoint: `/maplestory/v1/ranking/overall?${query}`,
+  });
+}
+
+export async function getRankingUnion(
+  date: string,
+  options: { worldName?: string; ocid?: string; page?: number } = {},
+) {
+  const query = new URLSearchParams({ date });
+  if (options.worldName) { query.set("world_name", options.worldName); }
+  if (options.ocid) { query.set("ocid", options.ocid); }
+  if (options.page !== undefined) { query.set("page", String(options.page)); }
+  return nexonFetch<RankingUnionType>({
+    endpoint: `/maplestory/v1/ranking/union?${query}`,
+  });
+}
+
+export async function getRankingGuild(
+  date: string,
+  rankingType: 0 | 1 | 2,
+  options: { worldName?: string; guildName?: string; page?: number } = {},
+) {
+  const query = new URLSearchParams({ date, ranking_type: String(rankingType) });
+  if (options.worldName) { query.set("world_name", options.worldName); }
+  if (options.guildName) { query.set("guild_name", options.guildName); }
+  if (options.page !== undefined) { query.set("page", String(options.page)); }
+  return nexonFetch<RankingGuildType>({
+    endpoint: `/maplestory/v1/ranking/guild?${query}`,
+  });
+}
+
+export async function getRankingDojang(
+  date: string,
+  difficulty: 0 | 1,
+  options: { worldName?: string; characterClass?: string; ocid?: string; page?: number } = {},
+) {
+  const query = new URLSearchParams({ date, difficulty: String(difficulty) });
+  if (options.worldName) { query.set("world_name", options.worldName); }
+  if (options.characterClass) { query.set("class", options.characterClass); }
+  if (options.ocid) { query.set("ocid", options.ocid); }
+  if (options.page !== undefined) { query.set("page", String(options.page)); }
+  return nexonFetch<RankingDojangType>({
+    endpoint: `/maplestory/v1/ranking/dojang?${query}`,
+  });
+}
+
+export async function getRankingTheSeed(
+  date: string,
+  options: { worldName?: string; ocid?: string; page?: number } = {},
+) {
+  const query = new URLSearchParams({ date });
+  if (options.worldName) { query.set("world_name", options.worldName); }
+  if (options.ocid) { query.set("ocid", options.ocid); }
+  if (options.page !== undefined) { query.set("page", String(options.page)); }
+  return nexonFetch<RankingTheSeedType>({
+    endpoint: `/maplestory/v1/ranking/theseed?${query}`,
+  });
+}
+
+export async function getRankingAchievement(
+  date: string,
+  options: { ocid?: string; page?: number } = {},
+) {
+  const query = new URLSearchParams({ date });
+  if (options.ocid) { query.set("ocid", options.ocid); }
+  if (options.page !== undefined) { query.set("page", String(options.page)); }
+  return nexonFetch<RankingAchievementType>({
+    endpoint: `/maplestory/v1/ranking/achievement?${query}`,
+  });
+}
+
+// ─── 공지 ───────────────────────────────────────────────────────────────────
+
+export async function getNotice() {
+  return nexonFetch<NoticeListType>({ endpoint: `/maplestory/v1/notice` });
+}
+
+export async function getNoticeDetail(noticeId: number) {
+  return nexonFetch<NoticeDetailType>({
+    endpoint: `/maplestory/v1/notice/detail?notice_id=${noticeId}`,
+  });
+}
+
+export async function getNoticeUpdate() {
+  return nexonFetch<UpdateNoticeListType>({ endpoint: `/maplestory/v1/notice-update` });
+}
+
+export async function getNoticeUpdateDetail(noticeId: number) {
+  return nexonFetch<NoticeDetailType>({
+    endpoint: `/maplestory/v1/notice-update/detail?notice_id=${noticeId}`,
+  });
+}
+
+export async function getNoticeEvent() {
+  return nexonFetch<EventNoticeListType>({ endpoint: `/maplestory/v1/notice-event` });
+}
+
+export async function getNoticeEventDetail(noticeId: number) {
+  return nexonFetch<EventNoticeDetailType>({
+    endpoint: `/maplestory/v1/notice-event/detail?notice_id=${noticeId}`,
+  });
+}
+
+export async function getNoticeCashShop() {
+  return nexonFetch<CashShopNoticeListType>({ endpoint: `/maplestory/v1/notice-cashshop` });
+}
+
+export async function getNoticeCashShopDetail(noticeId: number) {
+  return nexonFetch<CashShopNoticeDetailType>({
+    endpoint: `/maplestory/v1/notice-cashshop/detail?notice_id=${noticeId}`,
+  });
 }

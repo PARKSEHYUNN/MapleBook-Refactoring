@@ -13,23 +13,14 @@ import { cookies } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import { z } from "zod";
 
 import { getDb } from "@/db";
-import { users } from "@/db/schema";
+import { loginHistory, users } from "@/db/schema";
 import { encrypt } from "@/lib/crypto";
 import { logger } from "@/lib/logger";
 import { getAccountOUID } from "@/lib/nexon";
-
-// Zod 스키마 정의
-const loginSchema = z.object({
-  apiKey: z.string().min(1, "API key is missing."),
-  rememberMe: z.boolean().optional().default(false),
-});
-
-const testLoginSchema = z.object({
-  secret: z.string().min(1, "SECRET key is missing."),
-});
+import { parseUserAgent } from "@/lib/ua";
+import { loginSchema, testLoginSchema } from "@/types/common";
 
 /**
  * @function loginHandler
@@ -61,7 +52,7 @@ export async function loginHandler(request: NextRequest) {
         validationResult.error.flatten(),
       );
       return NextResponse.json(
-        { success: false, message: "Invalid request data." },
+        { errorCode: "INVALID_REQUEST_DATA", message: "Invalid request data." },
         { status: 400 },
       );
     }
@@ -77,7 +68,10 @@ export async function loginHandler(request: NextRequest) {
     const ouid = await getAccountOUID(apiKey).catch(() => null);
     if (!ouid) {
       logger.warn("AuthAPI", "NEXON Open API Key 인증 실패");
-      return NextResponse.json({ success: false, message: "Invalid API key." }, { status: 401 });
+      return NextResponse.json(
+        { errorCode: "INVALID_API_KEY", message: "Invalid API key." },
+        { status: 401 },
+      );
     }
 
     // DB Upsert
@@ -91,8 +85,21 @@ export async function loginHandler(request: NextRequest) {
       })
       .returning();
 
+    // UserAgent 파싱
+    const rawUserAgent = request.headers.get("user-agent") || "";
+    const readableUserAgent = parseUserAgent(rawUserAgent);
+
+    // 로그인 기록 추가
+    await db.insert(loginHistory).values({
+      userId: user.id,
+      loginType: "MANUAL",
+      ipAddress: request.headers.get("x-forwarded-for") || "unknown",
+      userAgent: readableUserAgent,
+      isSuccess: true,
+    });
+
     // 데이터 직렬화 및 암호화
-    const sessionPayload = JSON.stringify({ apiKey, ouid, rememberMe });
+    const sessionPayload = JSON.stringify({ apiKey, ouid, rememberMe, loggedAt: Date.now() });
     const encrypted = await encrypt(sessionPayload, env.COOKIE_SECRET);
 
     // 쿠키 저장
@@ -107,10 +114,13 @@ export async function loginHandler(request: NextRequest) {
 
     // 응답
     logger.info("AuthAPI", "로그인 성공", { ouid });
-    return NextResponse.json({ success: true }, { status: 200 });
+    return NextResponse.json({}, { status: 200 });
   } catch (error) {
     logger.error("AuthAPI", "로그인 처리 중 내부 서버 에러 발생", error);
-    return NextResponse.json({ success: false, message: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { errorCode: "INTERNAL_SERVER_ERROR", message: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -132,7 +142,7 @@ export async function logoutHandler(request: NextRequest) {
 
   // 응답
   logger.info("AuthAPI", "로그아웃 처리됨");
-  return NextResponse.json({ success: true }, { status: 200 });
+  return NextResponse.json({}, { status: 200 });
 }
 
 /**
@@ -162,7 +172,10 @@ export async function testLoginHandler(request: NextRequest) {
     const validationResult = testLoginSchema.safeParse(rawBody);
     if (!validationResult.success) {
       logger.warn("TestAuth", "테스트 로그인 비정상 접근 시도 (Zod 실패)");
-      return NextResponse.json(null, { status: 404 });
+      return NextResponse.json(
+        { errorCode: "NOT_FOUND", message: "404 NOT FOUND." },
+        { status: 404 },
+      );
     }
     const { secret } = validationResult.data;
 
@@ -171,7 +184,10 @@ export async function testLoginHandler(request: NextRequest) {
 
     if (!env.TEST_ACCOUNT_SECRET || secret !== env.TEST_ACCOUNT_SECRET) {
       logger.warn("TestAuth", "테스트 시크릿 키 불일치 (인가되지 않은 접근)");
-      return NextResponse.json(null, { status: 404 });
+      return NextResponse.json(
+        { errorCode: "NOT_FOUND", message: "404 NOT FOUND." },
+        { status: 404 },
+      );
     }
 
     // 데이터 직렬화 및 암호화
@@ -193,9 +209,12 @@ export async function testLoginHandler(request: NextRequest) {
 
     // 응답
     logger.info("TestAuth", "테스트 계정 로그인 성공");
-    return NextResponse.json({ success: true }, { status: 200 });
+    return NextResponse.json({}, { status: 200 });
   } catch (error) {
     logger.error("TestAuth", "테스트 로그인 처리 중 내부 에러 발생", error);
-    return NextResponse.json(null, { status: 404 });
+    return NextResponse.json(
+      { errorCode: "NOT_FOUND", message: "404 NOT FOUND." },
+      { status: 404 },
+    );
   }
 }

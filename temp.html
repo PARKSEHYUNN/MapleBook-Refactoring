@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="ko" class="">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MapleBook – 캐릭터 페이지 디자인</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Geist', sans-serif; }
+
+    /* ── Galmuri11 폰트 (실제 앱과 동일) ── */
+    @font-face {
+      font-family: 'Galmuri11';
+      src: url('https://cdn.jsdelivr.net/gh/quiple/galmuri/dist/Galmuri11.woff2') format('woff2');
+      font-weight: normal;
+    }
+    .font-galmuri { font-family: 'Galmuri11', monospace; }
+
+    /* ── 글로벌 배경 ── */
+    .bg-maple {
+      background-image: url('https://i.imgur.com/kLkGfzz.jpeg'); /* 교체 가능 */
+      background-size: cover;
+      background-position: center;
+    }
+
+    /* ── 토글 테마 ── */
+    html.dark { color-scheme: dark; }
+
+    /* ── 별점 SVG ── */
+    .star-filled { color: #facc15; }
+    .star-empty  { color: #d1d5db; }
+    html.dark .star-empty { color: rgba(255,255,255,.2); }
+
+    /* ── 스크롤바 숨김 ── */
+    ::-webkit-scrollbar { display: none; }
+  </style>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+    }
+  </script>
+</head>
+<body class="antialiased bg-maple min-h-screen">
+
+  <!-- ── 앱 배경 오버레이 ── -->
+  <div class="fixed inset-0 -z-10 bg-white/40 dark:bg-black/55 pointer-events-none"></div>
+
+  <!-- ── 다크모드 토글 (우상단 고정) ── -->
+  <button
+    onclick="document.documentElement.classList.toggle('dark')"
+    class="fixed top-4 right-4 z-50 px-3 py-1.5 rounded-xl text-xs font-medium bg-white/70 dark:bg-white/10 border border-white/60 dark:border-white/20 text-zinc-700 dark:text-white/80 backdrop-blur-sm hover:brightness-110 transition-all"
+  >
+    다크모드 토글
+  </button>
+
+  <!-- ── Navbar (간략) ── -->
+  <nav class="w-full flex items-center justify-between px-6 py-3 bg-white/50 dark:bg-black/30 backdrop-blur-sm border-b border-white/40 dark:border-white/10">
+    <span class="text-sm font-bold text-zinc-800 dark:text-white">MapleBook</span>
+    <div class="flex items-center gap-3">
+      <button class="text-xs text-zinc-500 dark:text-white/60 hover:text-zinc-800 dark:hover:text-white transition-colors">로그인</button>
+    </div>
+  </nav>
+
+  <!-- ── 페이지 본문 ── -->
+  <div class="max-w-3xl mx-auto px-4 py-12 flex flex-col gap-3">
+
+    <!-- ════════════════════════════════════════
+         캐릭터 헤더 영역
+    ════════════════════════════════════════ -->
+    <div class="relative rounded-2xl h-[380px] sm:h-[300px]">
+
+      <!-- 배경 이미지 + 어두운 오버레이 -->
+      <div class="absolute inset-0 overflow-hidden rounded-2xl">
+        <img
+          src="https://i.imgur.com/kLkGfzz.jpeg"
+          alt=""
+          aria-hidden="true"
+          class="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+          style="object-position:50% 30%;"
+        />
+        <div class="absolute inset-0 bg-black/10 pointer-events-none"></div>
+      </div>
+
+      <!-- 왼쪽 상단: 직업 -->
+      <div class="hidden sm:flex absolute backdrop-blur-sm items-center justify-center"
+           style="top:16px;left:16px;width:128px;height:24px;border-radius:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);">
+        <span class="text-[10px] font-galmuri" style="color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.85);">불꽃술사</span>
+      </div>
+
+      <!-- 오른쪽 상단: 갱신 버튼 + 최근 갱신 -->
+      <div class="hidden sm:flex absolute flex-col gap-1.5" style="top:16px;right:16px;">
+        <!-- 갱신 버튼 -->
+        <button class="backdrop-blur-sm flex items-center justify-center gap-1.5 hover:brightness-125 transition-all"
+                style="width:128px;height:24px;border-radius:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+            <path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+            <path d="M8 16H3v5"/>
+          </svg>
+          <span class="text-[10px] font-galmuri" style="color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.85);">갱신</span>
+        </button>
+        <!-- 최근 갱신 시각 -->
+        <div class="backdrop-blur-sm flex items-center justify-center"
+             style="width:128px;height:24px;border-radius:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);">
+          <span class="text-[10px] font-galmuri" style="color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.85);">3분 전</span>
+        </div>
+      </div>
+
+      <!-- 왼쪽 하단 박스 3개: 유니온/무릉/인기도 -->
+      <div class="hidden sm:flex absolute flex-col gap-2" style="bottom:16px;left:16px;">
+        <div class="backdrop-blur-sm flex items-center justify-between px-2.5"
+             style="width:128px;height:24px;border-radius:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);">
+          <span class="text-[10px] font-galmuri" style="color:rgba(255,255,255,.5);">유니온</span>
+          <span class="text-[10px] font-galmuri" style="color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.85);">8,800</span>
+        </div>
+        <div class="backdrop-blur-sm flex items-center justify-between px-2.5"
+             style="width:128px;height:24px;border-radius:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);">
+          <span class="text-[10px] font-galmuri" style="color:rgba(255,255,255,.5);">무릉도장</span>
+          <span class="text-[10px] font-galmuri" style="color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.85);">-</span>
+        </div>
+        <div class="backdrop-blur-sm flex items-center justify-between px-2.5"
+             style="width:128px;height:24px;border-radius:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);">
+          <span class="text-[10px] font-galmuri" style="color:rgba(255,255,255,.5);">인기도</span>
+          <span class="text-[10px] font-galmuri" style="color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.85);">9,999</span>
+        </div>
+      </div>
+
+      <!-- 오른쪽 하단 박스 3개: 길드/길드명/경험치 -->
+      <div class="hidden sm:flex absolute flex-col gap-2" style="bottom:16px;right:16px;">
+        <button class="backdrop-blur-sm flex items-center justify-center hover:brightness-110 transition-all"
+                style="width:128px;height:24px;border-radius:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);">
+          <span class="text-[10px] font-bold font-galmuri" style="color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.85);">길드</span>
+        </button>
+        <div class="backdrop-blur-sm flex items-center justify-between px-2.5"
+             style="width:128px;height:24px;border-radius:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);">
+          <span class="text-[10px] font-galmuri" style="color:rgba(255,255,255,.5);">길드</span>
+          <span class="text-[10px] font-galmuri" style="color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.85);">메이플전설</span>
+        </div>
+        <div class="backdrop-blur-sm flex items-center justify-between px-2.5"
+             style="width:128px;height:24px;border-radius:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);">
+          <span class="text-[10px] font-galmuri" style="color:rgba(255,255,255,.5);">경험치</span>
+          <span class="text-[10px] font-galmuri" style="color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.85);">74.5%</span>
+        </div>
+      </div>
+
+      <!-- 상단 중앙: 레벨 박스 -->
+      <div class="hidden sm:flex absolute top-0 left-1/2 -translate-x-1/2 items-end gap-1 z-20">
+        <div class="flex backdrop-blur-sm items-center justify-center w-32 h-6"
+             style="border-radius:0 0 12px 12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);border-top:none;">
+          <span class="text-[10px] font-bold font-galmuri" style="color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.85);">
+            <span style="opacity:.5;">Lv. </span>285
+          </span>
+        </div>
+      </div>
+
+      <!-- 모바일 상단: 레벨 + 직업 한 줄 -->
+      <div class="sm:hidden absolute top-2 left-3 right-3 flex items-center gap-1.5 z-20">
+        <div class="flex-1 h-6 backdrop-blur-sm flex items-center justify-center gap-2"
+             style="border-radius:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);">
+          <span class="text-[9px] font-bold font-galmuri" style="color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.85);">
+            <span style="opacity:.5;">Lv. </span>285
+          </span>
+          <span style="color:rgba(255,255,255,.3);font-size:8px;">·</span>
+          <span class="text-[9px] font-galmuri" style="color:#fff;opacity:.85;">불꽃술사</span>
+        </div>
+      </div>
+
+      <!-- 모바일 갱신 버튼 -->
+      <div class="sm:hidden absolute top-10 left-3 right-3 flex gap-1.5">
+        <button class="backdrop-blur-sm flex items-center justify-center gap-1.5 flex-1 hover:brightness-125 transition-all"
+                style="height:24px;border-radius:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);">
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+            <path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+            <path d="M8 16H3v5"/>
+          </svg>
+          <span class="text-[9px] font-galmuri" style="color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.85);">갱신</span>
+        </button>
+        <div class="backdrop-blur-sm flex items-center justify-center flex-1"
+             style="height:24px;border-radius:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);">
+          <span class="text-[9px] font-galmuri" style="color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.85);">3분 전</span>
+        </div>
+      </div>
+
+      <!-- 모바일 하단 2행 그리드 -->
+      <div class="sm:hidden absolute left-3 right-3 bottom-3 grid grid-cols-3 gap-1.5">
+        <div class="backdrop-blur-sm flex items-center justify-between px-2 min-w-0"
+             style="height:24px;border-radius:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);">
+          <span class="text-[9px] shrink-0 font-galmuri" style="color:rgba(255,255,255,.5);">유니온</span>
+          <span class="text-[9px] truncate ml-1 font-galmuri" style="color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.85);">8,800</span>
+        </div>
+        <div class="backdrop-blur-sm flex items-center justify-between px-2 min-w-0"
+             style="height:24px;border-radius:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);">
+          <span class="text-[9px] shrink-0 font-galmuri" style="color:rgba(255,255,255,.5);">무릉도장</span>
+          <span class="text-[9px] truncate ml-1 font-galmuri" style="color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.85);">-</span>
+        </div>
+        <div class="backdrop-blur-sm flex items-center justify-between px-2 min-w-0"
+             style="height:24px;border-radius:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);">
+          <span class="text-[9px] shrink-0 font-galmuri" style="color:rgba(255,255,255,.5);">인기도</span>
+          <span class="text-[9px] truncate ml-1 font-galmuri" style="color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.85);">9,999</span>
+        </div>
+        <button class="backdrop-blur-sm flex items-center justify-center hover:brightness-110 transition-all min-w-0"
+                style="height:24px;border-radius:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);">
+          <span class="text-[9px] font-bold font-galmuri" style="color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.85);">길드</span>
+        </button>
+        <div class="backdrop-blur-sm flex items-center justify-between px-2 min-w-0"
+             style="height:24px;border-radius:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);">
+          <span class="text-[9px] shrink-0 font-galmuri" style="color:rgba(255,255,255,.5);">길드</span>
+          <span class="text-[9px] truncate ml-1 font-galmuri" style="color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.85);">메이플전설</span>
+        </div>
+        <div class="backdrop-blur-sm flex items-center justify-between px-2 min-w-0"
+             style="height:24px;border-radius:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);">
+          <span class="text-[9px] shrink-0 font-galmuri" style="color:rgba(255,255,255,.5);">경험치</span>
+          <span class="text-[9px] truncate ml-1 font-galmuri" style="color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.85);">74.5%</span>
+        </div>
+      </div>
+
+      <!-- 하단 중앙: 캐릭터 이미지 + 닉네임 -->
+      <div class="absolute sm:bottom-[30px] bottom-[84px] left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 z-10">
+        <div class="flex items-end justify-center overflow-hidden sm:translate-y-24 translate-y-16 w-[240px] sm:w-[300px] h-[240px]">
+          <!-- 실제 앱에서는 Nexon 캐릭터 이미지 URL로 교체 -->
+          <img
+            src="https://open.api.nexon.com/static/maplestory/ItemIcon/KEFJCKPB.png"
+            alt="캐릭터"
+            style="max-width:100%;height:auto;"
+            class="pointer-events-none"
+            onerror="this.style.display='none'"
+          />
+        </div>
+        <div class="backdrop-blur-sm flex items-center justify-center px-4 py-1.5"
+             style="border-radius:12px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);">
+          <span class="text-[10px] font-bold font-galmuri" style="color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.85);">메이플전설닉</span>
+        </div>
+      </div>
+    </div><!-- /캐릭터 헤더 -->
+
+
+    <!-- ════════════════════════════════════════
+         캐릭터 소개 (Bio)
+    ════════════════════════════════════════ -->
+    <div class="bg-white/55 backdrop-blur-md border border-white/60 dark:bg-white/10 dark:border-white/20 rounded-2xl px-4 py-3 flex items-center gap-3">
+      <!-- 캐릭터 얼굴 원형 크롭 -->
+      <div class="shrink-0 w-14 h-14 rounded-full overflow-hidden border border-white/40 dark:border-white/20 bg-white/20">
+        <div class="w-full h-full bg-zinc-200 dark:bg-white/10"></div>
+      </div>
+      <!-- 말풍선 -->
+      <div class="relative flex-1">
+        <div class="absolute left-[-7px] top-1/2 -translate-y-1/2 w-0 h-0
+          border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent
+          border-r-[6px] border-r-white/80 dark:border-r-white/15"></div>
+        <div class="bg-white/80 dark:bg-white/10 border border-white/60 dark:border-white/20 rounded-2xl px-4 py-2.5">
+          <p class="text-sm text-zinc-700 dark:text-white/80 leading-snug">
+            안녕하세요. 메이플전설닉 입니다.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         캐릭터 모션 (접이식 패널)
+    ════════════════════════════════════════ -->
+    <div class="bg-white/55 backdrop-blur-md border border-white/60 dark:bg-white/10 dark:border-white/20 rounded-2xl overflow-hidden">
+      <button
+        onclick="toggleMotion()"
+        class="w-full flex items-center justify-between px-5 py-3.5 text-sm font-medium text-zinc-700 dark:text-white/80 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+      >
+        <span>캐릭터 모션</span>
+        <svg id="motionChevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="transition-transform duration-200">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+      <div id="motionPanel" class="hidden px-5 pb-5 pt-1 border-t border-zinc-100 dark:border-white/10">
+        <div class="flex gap-3 pt-3">
+          <!-- 액션 -->
+          <div class="flex flex-col gap-1.5 flex-1 min-w-0">
+            <label class="text-[10px] font-semibold text-zinc-400 dark:text-white/30 uppercase tracking-wider">액션</label>
+            <div class="relative">
+              <select class="w-full text-xs text-zinc-700 dark:text-white/80 bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-lg px-2.5 py-1.5 pr-6 outline-none cursor-pointer hover:border-zinc-300 dark:hover:border-white/20 appearance-none">
+                <option>서기 (A00)</option>
+                <option>걷기 (A01)</option>
+                <option>점프 (A02)</option>
+              </select>
+              <svg class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-white/30" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+          </div>
+          <!-- 이모션 -->
+          <div class="flex flex-col gap-1.5 flex-1 min-w-0">
+            <label class="text-[10px] font-semibold text-zinc-400 dark:text-white/30 uppercase tracking-wider">이모션</label>
+            <div class="relative">
+              <select class="w-full text-xs text-zinc-700 dark:text-white/80 bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-lg px-2.5 py-1.5 pr-6 outline-none cursor-pointer hover:border-zinc-300 dark:hover:border-white/20 appearance-none">
+                <option>기본 (E00)</option>
+                <option>기쁨 (E01)</option>
+                <option>슬픔 (E02)</option>
+              </select>
+              <svg class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-white/30" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+          </div>
+          <!-- 무기 -->
+          <div class="flex flex-col gap-1.5 flex-1 min-w-0">
+            <label class="text-[10px] font-semibold text-zinc-400 dark:text-white/30 uppercase tracking-wider">무기</label>
+            <div class="relative">
+              <select class="w-full text-xs text-zinc-700 dark:text-white/80 bg-white dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-lg px-2.5 py-1.5 pr-6 outline-none cursor-pointer hover:border-zinc-300 dark:hover:border-white/20 appearance-none">
+                <option>기본 (W00)</option>
+                <option>공격 (W01)</option>
+              </select>
+              <svg class="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-white/30" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </div>
+            <!-- 좌우 반전 버튼 -->
+            <button
+              id="flipBtn"
+              onclick="toggleFlip()"
+              class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors bg-white dark:bg-white/5 text-zinc-500 dark:text-white/50 border-zinc-200 dark:border-white/10 hover:border-zinc-300 dark:hover:border-white/20"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3"/>
+                <path d="M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3"/>
+                <line x1="12" y1="20" x2="12" y2="4"/>
+              </svg>
+              좌우 반전
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ════════════════════════════════════════
+         매너 점수 요약 카드
+    ════════════════════════════════════════ -->
+    <div class="bg-white/55 backdrop-blur-md border border-white/60 dark:bg-white/10 dark:border-white/20 rounded-2xl p-6 flex items-center gap-6">
+      <div class="flex flex-col items-center gap-1">
+        <span class="text-4xl font-bold text-zinc-900 dark:text-white">4.3</span>
+        <span class="text-xs text-zinc-400 dark:text-white/65">매너 점수</span>
+      </div>
+      <div class="w-px h-10 bg-zinc-100 dark:bg-white/20"></div>
+      <div class="flex flex-col gap-1">
+        <!-- 별점 표시 -->
+        <div class="flex gap-0.5">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="star-filled"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="star-filled"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="star-filled"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="star-filled"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="star-empty"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <span class="text-xs text-zinc-500 dark:text-white/60">리뷰 12개</span>
+        <span class="text-xs text-zinc-500 dark:text-white/55">리뷰가 충분하지 않아 AI가 요약할 수 없어요</span>
+      </div>
+    </div>
+
+
+    <!-- ════════════════════════════════════════
+         탭 네비게이션 + 콘텐츠
+    ════════════════════════════════════════ -->
+    <div class="bg-white/55 backdrop-blur-md border border-white/60 dark:bg-white/10 dark:border-white/20 rounded-2xl overflow-hidden">
+
+      <!-- 탭 헤더 -->
+      <div class="flex border-b border-white/60 dark:border-white/20 px-2">
+        <button onclick="setTab('reviews')" id="tab-reviews"
+          class="tab-btn px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px border-zinc-700 text-zinc-900 dark:border-white dark:text-white">평가</button>
+        <button onclick="setTab('info')" id="tab-info"
+          class="tab-btn px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px border-transparent text-zinc-500 dark:text-white/65 hover:text-zinc-700 dark:hover:text-white/70">캐릭터 정보</button>
+        <button onclick="setTab('union')" id="tab-union"
+          class="tab-btn px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px border-transparent text-zinc-500 dark:text-white/65 hover:text-zinc-700 dark:hover:text-white/70">유니온</button>
+        <button onclick="setTab('history')" id="tab-history"
+          class="tab-btn px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px border-transparent text-zinc-500 dark:text-white/65 hover:text-zinc-700 dark:hover:text-white/70">성장 기록</button>
+      </div>
+
+      <div class="p-4 flex flex-col gap-3">
+
+        <!-- ── 평가 탭 ── -->
+        <div id="content-reviews" class="flex flex-col gap-3">
+
+          <!-- 리뷰 작성 폼 -->
+          <form class="rounded-xl border border-white/60 dark:border-white/20 bg-white/40 dark:bg-white/5 p-4 flex flex-col gap-3">
+            <!-- 별점 선택 -->
+            <div class="flex gap-1" id="starInput">
+              <button type="button" onclick="setReviewStar(1)" class="star-input transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="star-empty"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </button>
+              <button type="button" onclick="setReviewStar(2)" class="star-input transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="star-empty"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </button>
+              <button type="button" onclick="setReviewStar(3)" class="star-input transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="star-empty"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </button>
+              <button type="button" onclick="setReviewStar(4)" class="star-input transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="star-empty"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </button>
+              <button type="button" onclick="setReviewStar(5)" class="star-input transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="star-empty"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </button>
+            </div>
+            <!-- 텍스트 입력 -->
+            <textarea
+              placeholder="이 캐릭터와의 경험을 공유해주세요 (선택)"
+              rows="3"
+              class="w-full resize-none rounded-lg bg-white/60 dark:bg-white/10 border border-white/70 dark:border-white/20 px-3 py-2 text-sm text-zinc-800 dark:text-white placeholder-zinc-400 dark:placeholder-white/30 outline-none focus:ring-2 focus:ring-zinc-300 dark:focus:ring-white/30 transition"
+            ></textarea>
+            <!-- 이미지 첨부 (더미) -->
+            <div class="flex flex-wrap gap-2">
+              <label class="w-16 h-16 shrink-0 rounded-lg border-2 border-dashed border-zinc-300 dark:border-white/20 flex flex-col items-center justify-center cursor-pointer hover:border-zinc-400 dark:hover:border-white/40 transition-colors">
+                <input type="file" accept="image/*" class="hidden" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-zinc-400 dark:text-white/30">
+                  <path d="M12 5v14M5 12h14"/>
+                </svg>
+                <span class="text-xs text-zinc-400 dark:text-white/30 mt-0.5">0/5</span>
+              </label>
+            </div>
+            <!-- 제출 버튼 -->
+            <div class="flex justify-end">
+              <button type="submit" class="px-4 py-1.5 rounded-lg text-sm font-medium bg-zinc-900 text-white hover:bg-zinc-700 dark:bg-white/20 dark:hover:bg-white/30 dark:border dark:border-white/20 disabled:opacity-40 transition-colors">
+                올리기
+              </button>
+            </div>
+          </form>
+
+          <!-- 리뷰 카드 1 -->
+          <div class="rounded-xl border border-white/60 dark:border-white/20 bg-white/40 dark:bg-white/5 p-4 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <!-- 리뷰어 아바타 -->
+                <div class="w-7 h-7 rounded-full bg-zinc-200 dark:bg-white/15 overflow-hidden shrink-0"></div>
+                <div class="flex flex-col">
+                  <span class="text-xs font-medium text-zinc-800 dark:text-white/90">좋은유저123</span>
+                  <span class="text-[10px] text-zinc-400 dark:text-white/40">2025. 12. 11.</span>
+                </div>
+              </div>
+              <!-- 별점 -->
+              <div class="flex gap-0.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="star-filled"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="star-filled"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="star-filled"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="star-filled"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="star-filled"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+            </div>
+            <p class="text-sm text-zinc-700 dark:text-white/80 leading-relaxed">
+              보스 파티를 정말 잘 도와주시고 매너도 최고예요! 다음에 또 같이 하고 싶어요 👍
+            </p>
+            <!-- 투표 버튼 -->
+            <div class="flex items-center gap-2 pt-1">
+              <button class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs text-zinc-500 dark:text-white/50 border border-zinc-200 dark:border-white/10 hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg>
+                도움돼요 8
+              </button>
+              <button class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs text-zinc-500 dark:text-white/50 border border-zinc-200 dark:border-white/10 hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"/></svg>
+                별로예요 1
+              </button>
+            </div>
+          </div>
+
+          <!-- 리뷰 카드 2 -->
+          <div class="rounded-xl border border-white/60 dark:border-white/20 bg-white/40 dark:bg-white/5 p-4 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-full bg-zinc-200 dark:bg-white/15 overflow-hidden shrink-0"></div>
+                <div class="flex flex-col">
+                  <span class="text-xs font-medium text-zinc-800 dark:text-white/90">파티고수456</span>
+                  <span class="text-[10px] text-zinc-400 dark:text-white/40">2025. 11. 29.</span>
+                </div>
+              </div>
+              <div class="flex gap-0.5">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="star-filled"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="star-filled"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="star-filled"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="star-empty"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" class="star-empty"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              </div>
+            </div>
+            <p class="text-sm text-zinc-700 dark:text-white/80 leading-relaxed">
+              전반적으로 좋은 분이에요. 가끔 응답이 늦지만 이해해요.
+            </p>
+            <div class="flex items-center gap-2 pt-1">
+              <button class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs text-zinc-500 dark:text-white/50 border border-zinc-200 dark:border-white/10 hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/></svg>
+                도움돼요 3
+              </button>
+              <button class="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs text-zinc-500 dark:text-white/50 border border-zinc-200 dark:border-white/10 hover:bg-zinc-50 dark:hover:bg-white/5 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"/></svg>
+                별로예요 0
+              </button>
+            </div>
+          </div>
+        </div><!-- /평가 탭 -->
+
+        <!-- ── 캐릭터 정보 탭 ── -->
+        <div id="content-info" class="hidden flex-col gap-4">
+          <!-- 서브 칩 네비게이션 -->
+          <div class="flex gap-2 flex-wrap">
+            <button onclick="setChip('stat')" id="chip-stat"
+              class="chip-btn flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-medium border transition-colors bg-zinc-900 text-white border-zinc-900 dark:bg-white dark:text-zinc-900 dark:border-white">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+              스탯
+            </button>
+            <button onclick="setChip('equipment')" id="chip-equipment"
+              class="chip-btn flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-medium border transition-colors text-zinc-500 border-zinc-200 hover:border-zinc-400 dark:text-white/65 dark:border-white/20 dark:hover:border-white/40">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              장비
+            </button>
+            <button onclick="setChip('cosmetic')" id="chip-cosmetic"
+              class="chip-btn flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-medium border transition-colors text-zinc-500 border-zinc-200 hover:border-zinc-400 dark:text-white/65 dark:border-white/20 dark:hover:border-white/40">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+              치장
+            </button>
+            <button onclick="setChip('skill')" id="chip-skill"
+              class="chip-btn flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-medium border transition-colors text-zinc-500 border-zinc-200 hover:border-zinc-400 dark:text-white/65 dark:border-white/20 dark:hover:border-white/40">
+              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              스킬
+            </button>
+          </div>
+          <!-- 스탯 콘텐츠 (더미) -->
+          <div id="chip-content-stat" class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            <div class="flex flex-col gap-0.5 bg-white/40 dark:bg-white/5 rounded-xl px-3 py-2.5 border border-white/60 dark:border-white/15">
+              <span class="text-[10px] text-zinc-400 dark:text-white/40 uppercase tracking-wide">STR</span>
+              <span class="text-sm font-semibold text-zinc-800 dark:text-white">4,521</span>
+            </div>
+            <div class="flex flex-col gap-0.5 bg-white/40 dark:bg-white/5 rounded-xl px-3 py-2.5 border border-white/60 dark:border-white/15">
+              <span class="text-[10px] text-zinc-400 dark:text-white/40 uppercase tracking-wide">DEX</span>
+              <span class="text-sm font-semibold text-zinc-800 dark:text-white">4,210</span>
+            </div>
+            <div class="flex flex-col gap-0.5 bg-white/40 dark:bg-white/5 rounded-xl px-3 py-2.5 border border-white/60 dark:border-white/15">
+              <span class="text-[10px] text-zinc-400 dark:text-white/40 uppercase tracking-wide">INT</span>
+              <span class="text-sm font-semibold text-zinc-800 dark:text-white">42,300</span>
+            </div>
+            <div class="flex flex-col gap-0.5 bg-white/40 dark:bg-white/5 rounded-xl px-3 py-2.5 border border-white/60 dark:border-white/15">
+              <span class="text-[10px] text-zinc-400 dark:text-white/40 uppercase tracking-wide">LUK</span>
+              <span class="text-sm font-semibold text-zinc-800 dark:text-white">4,089</span>
+            </div>
+            <div class="flex flex-col gap-0.5 bg-white/40 dark:bg-white/5 rounded-xl px-3 py-2.5 border border-white/60 dark:border-white/15">
+              <span class="text-[10px] text-zinc-400 dark:text-white/40 uppercase tracking-wide">HP</span>
+              <span class="text-sm font-semibold text-zinc-800 dark:text-white">57,200</span>
+            </div>
+            <div class="flex flex-col gap-0.5 bg-white/40 dark:bg-white/5 rounded-xl px-3 py-2.5 border border-white/60 dark:border-white/15">
+              <span class="text-[10px] text-zinc-400 dark:text-white/40 uppercase tracking-wide">MP</span>
+              <span class="text-sm font-semibold text-zinc-800 dark:text-white">29,400</span>
+            </div>
+            <div class="flex flex-col gap-0.5 bg-white/40 dark:bg-white/5 rounded-xl px-3 py-2.5 border border-white/60 dark:border-white/15">
+              <span class="text-[10px] text-zinc-400 dark:text-white/40 uppercase tracking-wide">크리티컬 확률</span>
+              <span class="text-sm font-semibold text-zinc-800 dark:text-white">100%</span>
+            </div>
+            <div class="flex flex-col gap-0.5 bg-white/40 dark:bg-white/5 rounded-xl px-3 py-2.5 border border-white/60 dark:border-white/15">
+              <span class="text-[10px] text-zinc-400 dark:text-white/40 uppercase tracking-wide">크리티컬 데미지</span>
+              <span class="text-sm font-semibold text-zinc-800 dark:text-white">68%</span>
+            </div>
+            <div class="flex flex-col gap-0.5 bg-white/40 dark:bg-white/5 rounded-xl px-3 py-2.5 border border-white/60 dark:border-white/15">
+              <span class="text-[10px] text-zinc-400 dark:text-white/40 uppercase tracking-wide">보스 데미지</span>
+              <span class="text-sm font-semibold text-zinc-800 dark:text-white">267%</span>
+            </div>
+          </div>
+          <!-- 장비/치장/스킬 콘텐츠 (더미 플레이스홀더) -->
+          <div id="chip-content-equipment" class="hidden">
+            <div class="text-sm text-zinc-500 dark:text-white/50 text-center py-8">장비 정보 영역 (EquipmentChip)</div>
+          </div>
+          <div id="chip-content-cosmetic" class="hidden">
+            <div class="text-sm text-zinc-500 dark:text-white/50 text-center py-8">치장 정보 영역 (CosmeticChip)</div>
+          </div>
+          <div id="chip-content-skill" class="hidden">
+            <div class="text-sm text-zinc-500 dark:text-white/50 text-center py-8">스킬 정보 영역 (SkillChip)</div>
+          </div>
+        </div><!-- /캐릭터 정보 탭 -->
+
+        <!-- ── 유니온 탭 ── -->
+        <div id="content-union" class="hidden">
+          <div class="text-sm text-zinc-500 dark:text-white/50 text-center py-8">유니온 정보 영역 (UnionChip)</div>
+        </div>
+
+        <!-- ── 성장 기록 탭 ── -->
+        <div id="content-history" class="hidden">
+          <div class="text-sm text-zinc-500 dark:text-white/50 text-center py-8">성장 기록 영역 (HistoryChip)</div>
+        </div>
+
+      </div>
+    </div><!-- /탭 -->
+
+  </div><!-- /max-w-3xl -->
+
+  <!-- ── 푸터 ── -->
+  <footer class="text-center py-6 text-xs text-zinc-400 dark:text-white/30">
+    © 2026 MapleBook
+  </footer>
+
+  <script>
+    // ── 탭 전환 ──
+    const TAB_IDS = ['reviews', 'info', 'union', 'history'];
+    function setTab(id) {
+      TAB_IDS.forEach(t => {
+        const btn = document.getElementById('tab-' + t);
+        const content = document.getElementById('content-' + t);
+        const active = t === id;
+        btn.classList.toggle('border-zinc-700', active);
+        btn.classList.toggle('dark:border-white', active);
+        btn.classList.toggle('text-zinc-900', active);
+        btn.classList.toggle('dark:text-white', active);
+        btn.classList.toggle('border-transparent', !active);
+        btn.classList.toggle('text-zinc-500', !active);
+        btn.classList.toggle('dark:text-white/65', !active);
+        if (active) content.classList.remove('hidden'), content.classList.add('flex');
+        else content.classList.add('hidden'), content.classList.remove('flex');
+      });
+    }
+
+    // ── 서브 칩 전환 ──
+    const CHIP_IDS = ['stat', 'equipment', 'cosmetic', 'skill'];
+    function setChip(id) {
+      CHIP_IDS.forEach(c => {
+        const btn = document.getElementById('chip-' + c);
+        const content = document.getElementById('chip-content-' + c);
+        const active = c === id;
+        if (active) {
+          btn.className = btn.className
+            .replace('text-zinc-500', '').replace('dark:text-white/65', '')
+            .replace('border-zinc-200', '').replace('dark:border-white/20', '');
+          btn.classList.add('bg-zinc-900','text-white','border-zinc-900','dark:bg-white','dark:text-zinc-900','dark:border-white');
+          content.classList.remove('hidden');
+        } else {
+          btn.classList.remove('bg-zinc-900','text-white','border-zinc-900','dark:bg-white','dark:text-zinc-900','dark:border-white');
+          btn.classList.add('text-zinc-500','border-zinc-200','hover:border-zinc-400','dark:text-white/65','dark:border-white/20','dark:hover:border-white/40');
+          content.classList.add('hidden');
+        }
+      });
+    }
+
+    // ── 모션 패널 토글 ──
+    function toggleMotion() {
+      const panel = document.getElementById('motionPanel');
+      const chevron = document.getElementById('motionChevron');
+      panel.classList.toggle('hidden');
+      chevron.classList.toggle('rotate-180');
+    }
+
+    // ── 좌우 반전 토글 ──
+    let flipped = false;
+    function toggleFlip() {
+      flipped = !flipped;
+      const btn = document.getElementById('flipBtn');
+      if (flipped) {
+        btn.classList.add('bg-zinc-800','dark:bg-white','text-white','dark:text-zinc-900','border-zinc-800','dark:border-white');
+        btn.classList.remove('bg-white','dark:bg-white/5','text-zinc-500','dark:text-white/50','border-zinc-200','dark:border-white/10');
+      } else {
+        btn.classList.remove('bg-zinc-800','dark:bg-white','text-white','dark:text-zinc-900','border-zinc-800','dark:border-white');
+        btn.classList.add('bg-white','dark:bg-white/5','text-zinc-500','dark:text-white/50','border-zinc-200','dark:border-white/10');
+      }
+    }
+
+    // ── 리뷰 별점 입력 ──
+    let reviewScore = 0;
+    function setReviewStar(n) {
+      reviewScore = reviewScore === n ? 0 : n;
+      document.querySelectorAll('.star-input svg').forEach((svg, i) => {
+        svg.classList.toggle('star-filled', i < reviewScore);
+        svg.classList.toggle('star-empty',  i >= reviewScore);
+      });
+    }
+  </script>
+</body>
+</html>

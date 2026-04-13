@@ -1,26 +1,59 @@
+/**
+ * @file src/app/globals.css - 애플리케이션 전역 스타일시트
+ * @author Mesbul <parksehyun2024@gmail.com>
+ * @description
+ * 애플리케이션 전체에 적용되는 베이스 스타일과 테마 시스템을 정의합니다.
+ * Pretendard 가변 폰트 및 Tailwind CSS를 연동하며, DaisyUI 플러그인을 통해 
+ * 다크 모드와 라이트 모드 전환을 위한 테마 설정을 관리합니다.
+ * CSS 변수를 활용하여 환경에 따른 배경색 및 글꼴 색상을 제어하고, 
+ * 메이플스토리 로고 폰트와 같은 커스텀 폰트 페이스를 테마 시스템에 연결합니다.
+ * @copyright Copyright (c) 2026 Mesbul.
+ */
+
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css");
 @import "tailwindcss";
 
-:root {
-	--background: #ffffff;
-	--foreground: #171717;
+@plugin "daisyui" {
+  theme: light, dark;
+  darktheme: dark;
 }
 
-@theme inline {
-	--color-background: var(--background);
-	--color-foreground: var(--foreground);
-	--font-sans: var(--font-geist-sans);
-	--font-mono: var(--font-geist-mono);
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme {
+  --font-sans: "Pretendard Variable", Pretendard, ui-sans-serif, system-ui, sans-serif;
+  --font-logo: var(--font-maplestory), cursive; /* 로컬 폰트 변수 연결 */
+  --font-galmuri: var(--font-galmuri), cursive;
 }
 
-@media (prefers-color-scheme: dark) {
-	:root {
-		--background: #0a0a0a;
-		--foreground: #ededed;
-	}
+.pixelated {
+  image-rendering: pixelated; /* 크롬, 엣지 */
+  image-rendering: crisp-edges; /* 파이어폭스 */
 }
 
-body {
-	background: var(--background);
-	color: var(--foreground);
-	font-family: Arial, Helvetica, sans-serif;
+.cursor-normal,
+.cursor-normal * {
+  cursor:
+    url("/Cursor/Default.png") 0 0,
+    auto !important;
+}
+
+.cursor-active,
+.cursor-active * {
+  cursor:
+    url("/Cursor/Click.png") 0 0,
+    pointer !important;
+}
+
+.cursor-hover-1,
+.cursor-hover-1 * {
+  cursor:
+    url("/Cursor/Clickable_0.png") 0 0,
+    pointer !important;
+}
+.cursor-hover-2,
+.cursor-hover-2 * {
+  cursor:
+    url("/Cursor/Clickable_1.png") 0 0,
+    pointer !important;
 }

@@ -9,6 +9,8 @@
  * @copyright Copyright (c) 2026 Mesbul.
  */
 
+import z from "zod";
+
 export type UserRole = "user" | "admin";
 export type WorldName =
   | "오로라"
@@ -159,7 +161,20 @@ export interface NEXONOpenAPIError {
   };
 }
 
-export interface LoginBodyType {
-  apiKey: string;
-  rememberMe: boolean;
-}
+export const loginSchema = z.object({
+  apiKey: z.string().min(1, "API key is missing."),
+  rememberMe: z.boolean().optional().default(false),
+});
+
+export const testLoginSchema = z.object({
+  secret: z.string().min(1, "SECRET key is missing."),
+});
+
+export type loginBodyType = z.infer<typeof loginSchema>;
+
+export type MeResponse =
+  | { status: "UNAUTHORIZED" }
+  | { status: "NEEDS_SETUP" }
+  | { status: "NEEDS_CONSENT"; mainCharacterId: string }
+  | { status: "NEEDS_CHARACTER" }
+  | { status: "ACTIVE"; mainCharacterId: string; mainCharacterImage: string | null; mainCharacterName: string | null };

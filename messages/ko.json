@@ -1,0 +1,10 @@
+{
+  "Auth": {
+    "APIKEY_EMPTY": "API KEY를 입력해주세요.",
+    "INVALID_REQUEST_DATA": "잘못된 데이터를 받았습니다.",
+    "INVALID_API_KEY": "잘못된 API KEY 입니다.",
+    "INTERNAL_SERVER_ERROR": "내부 서버 오류입니다.",
+    "NOT_FOUND": "잘못된 요청 입니다.",
+    "ERROR": "서버와 연결에 실패 했습니다."
+  }
+}

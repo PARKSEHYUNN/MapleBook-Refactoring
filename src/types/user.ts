@@ -35,6 +35,7 @@ export interface DefaultSettingsJsonType {
   background: CharacterBackground;
   theme: CharacterTheme;
   flip: boolean;
+  reviewNotification?: boolean;
 }
 
 /**
@@ -48,7 +49,8 @@ export const DefaultSettings: DefaultSettingsJsonType = {
   wmotion: "W00",
   background: "mapleIsland",
   theme: "dark",
-  flip: false
+  flip: false,
+  reviewNotification: true,
 }
 
 /**

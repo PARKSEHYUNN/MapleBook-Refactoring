@@ -1,0 +1,17 @@
+{
+  // 캐릭터 헤더 배경 이미지 위치 및 배율 설정
+  // x, y: backgroundPosition (%, px, left/center/right 등 CSS 값)
+  // scale: backgroundSize 배율 (1.0 = 100%)
+  "Cernium": {
+    "pc": {
+      "x": "50%",
+      "y": "95%",
+      "scale": 3.0,
+    },
+    "mobile": {
+      "x": "50%",
+      "y": "95%",
+      "scale": 7.0,
+    },
+  },
+}

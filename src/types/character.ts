@@ -9,7 +9,7 @@
  * @copyright Copyright (c) 2026 Mesbul.
  */
 
-import { ClassName, WorldName } from "./common";
+import { ClassName, UnionGrade, WorldName } from "./common";
 
 /**
  * 종합 능력치 정보 타입
@@ -716,4 +716,480 @@ export interface CharacterList {
   world_name: WorldName;
   character_class: ClassName;
   character_level: number;
+  character_image?: string;
+}
+
+export interface CharacterBasic {
+  date: string | null;
+  character_name: string;
+  world_name: WorldName;
+  character_gender: "남" | "여";
+  character_class: ClassName;
+  character_class_level: string;
+  character_level: number;
+  character_exp: number;
+  character_exp_rate: string;
+  character_guild_name: string | null;
+  character_image: string;
+  character_date_create: string | null;
+  access_flag: string;
+  liberation_quest_clear: string;
+}
+
+/**
+ * 인기도 정보 타입
+ * @see NEXON Open API - /maplestory/v1/character/popularity
+ */
+export interface CharacterPopularity {
+  date: string | null;
+  popularity: number;
+}
+
+/**
+ * 유니온 정보 타입
+ * @see NEXON Open API - /maplestory/v1/user/union
+ */
+export interface CharacterUnion {
+  date: string | null;
+  ouid: string;
+  union_level: number;
+  union_grade: UnionGrade;
+  union_artifact_level: number;
+  union_artifact_exp: number;
+  union_artifact_point: number;
+}
+
+/**
+ * 유니온 공격대 정보 타입
+ * @see NEXON Open API - /maplestory/v1/user/union-raider
+ */
+export interface UnionRaiderType {
+  date: string | null;
+  union_raider_stat: string[];
+  union_occupied_stat: string[];
+  union_inner_stat: UnionInnerStat[];
+  union_block: UnionBlock[];
+  use_preset_no: number;
+  union_raider_preset_1: UnionRaiderPreset | null;
+  union_raider_preset_2: UnionRaiderPreset | null;
+  union_raider_preset_3: UnionRaiderPreset | null;
+  union_raider_preset_4: UnionRaiderPreset | null;
+  union_raider_preset_5: UnionRaiderPreset | null;
+}
+
+export interface UnionInnerStat {
+  stat_field_id: string;
+  stat_field_effect: string;
+}
+
+export interface UnionBlock {
+  block_type: string;
+  block_class: string;
+  block_level: string;
+  block_control_point: { x: number; y: number };
+  block_position: { x: number; y: number }[];
+}
+
+export interface UnionRaiderPreset {
+  union_raider_stat: string[];
+  union_occupied_stat: string[];
+  union_inner_stat: UnionInnerStat[];
+  union_block: UnionBlock[];
+}
+
+/**
+ * 유니온 아티팩트 정보 타입
+ * @see NEXON Open API - /maplestory/v1/user/union-artifact
+ */
+export interface UnionArtifactType {
+  date: string | null;
+  union_artifact_effect: UnionArtifactEffect[];
+  union_artifact_crystal: UnionArtifactCrystal[];
+  union_artifact_remain_ap: number;
+}
+
+export interface UnionArtifactEffect {
+  name: string;
+  level: number;
+}
+
+export interface UnionArtifactCrystal {
+  name: string;
+  validity_flag: string;
+  date_expire: string | null;
+  level: number;
+  crystal_option_name_1: string;
+  crystal_option_name_2: string;
+  crystal_option_name_3: string;
+}
+
+/**
+ * 유니온 챔피언 정보 타입
+ * @see NEXON Open API - /maplestory/v1/user/union-champion
+ */
+export interface UnionChampionType {
+  date: string | null;
+  union_champion: UnionChampionEntry[];
+  champion_badge_total_info: ChampionBadgeTotalInfo[];
+}
+
+export interface UnionChampionEntry {
+  champion_name: string;
+  champion_slot: string;
+  champion_grade: string;
+  champion_class: string;
+  champion_badge_info: { badge_stat: string }[];
+}
+
+export interface ChampionBadgeTotalInfo {
+  stat_description: string;
+}
+
+/**
+ * 길드 기본 정보 타입
+ * @see NEXON Open API - /maplestory/v1/guild/basic
+ */
+export interface GuildBasicType {
+  date: string | null;
+  world_name: WorldName;
+  guild_name: string;
+  guild_level: number;
+  guild_fame: number;
+  guild_point: number;
+  guild_master_name: string;
+  guild_member_count: number;
+  guild_member: string[];
+  guild_skill: GuildSkill[];
+  guild_noblesse_skill: GuildSkill[];
+}
+
+export interface GuildSkill {
+  skill_name: string;
+  skill_description: string;
+  skill_level: number;
+  skill_effect: string;
+  skill_icon: string;
+}
+
+/**
+ * 연무장 리플레이 식별자 타입
+ * @see NEXON Open API - /maplestory/v1/battle-practice/replay-id
+ */
+export interface BattlePracticeReplayIdType {
+  register_date: string;
+  replay_id: string;
+}
+
+/**
+ * 연무장 측정 결과 타입
+ * @see NEXON Open API - /maplestory/v1/battle-practice/result
+ */
+export interface BattlePracticeResultType {
+  register_date: string;
+  total_play_time: number;
+  total_damage: number;
+  total_dps: number;
+  end_type: string;
+  like_count: number;
+  skill_statistic: BattlePracticeSkillStat[];
+}
+
+export interface BattlePracticeSkillStat {
+  skill_name: string;
+  skill_damage: number;
+  skill_dps: number;
+  skill_use_count: number;
+}
+
+/**
+ * 연무장 스킬 타임라인 타입
+ * @see NEXON Open API - /maplestory/v1/battle-practice/skill-timeline
+ */
+export interface BattlePracticeSkillTimelineType {
+  page_no: number;
+  total_page_no: number;
+  skill_timeline: { time: number; skill_name: string }[];
+}
+
+/**
+ * 스타포스 강화 결과 타입
+ * @see NEXON Open API - /maplestory/v1/history/starforce
+ */
+export interface StarforceHistoryType {
+  count: number;
+  next_cursor: string | null;
+  starforce_history: StarforceRecord[];
+}
+
+export interface StarforceRecord {
+  id: string;
+  item_upgrade_result: string;
+  before_starforce_count: number;
+  after_starforce_count: number;
+  starcatch_result: string;
+  superior_item_flag: string;
+  destroy_defence: string;
+  chance_time: string;
+  event_field_flag: string;
+  upgrade_item: string;
+  protect_shield: string;
+  bonus_stat_upgrade: string;
+  character_name: string;
+  world_name: string;
+  target_item: string;
+  date_create: string;
+  starforce_event_list: string[];
+}
+
+/**
+ * 잠재능력 재설정 이용 결과 타입
+ * @see NEXON Open API - /maplestory/v1/history/potential
+ */
+export interface PotentialHistoryType {
+  count: number;
+  next_cursor: string | null;
+  potential_history: PotentialRecord[];
+}
+
+export interface PotentialRecord {
+  id: string;
+  character_name: string;
+  date_create: string;
+  potential_type: string;
+  item_upgrade_result: string;
+  miracle_time_flag: string;
+  item_equipment_part: string;
+  item_level: number;
+  target_item: string;
+  potential_option_grade: string;
+  additional_potential_option_grade: string;
+  upgrade_guarantee: string;
+  upgrade_guarantee_count: number;
+  before_potential_option: PotentialOption[];
+  before_additional_potential_option: PotentialOption[];
+  after_potential_option: PotentialOption[];
+  after_additional_potential_option: PotentialOption[];
+}
+
+export interface PotentialOption {
+  value: string;
+  grade: string;
+}
+
+/**
+ * 큐브 이용 결과 타입
+ * @see NEXON Open API - /maplestory/v1/history/cube
+ */
+export interface CubeHistoryType {
+  count: number;
+  next_cursor: string | null;
+  cube_history: CubeRecord[];
+}
+
+export interface CubeRecord {
+  id: string;
+  character_name: string;
+  date_create: string;
+  cube_type: string;
+  item_upgrade_result: string;
+  miracle_time_flag: string;
+  item_equipment_part: string;
+  item_level: number;
+  target_item: string;
+  potential_option_grade: string;
+  additional_potential_option_grade: string;
+  upgrade_guarantee: string;
+  upgrade_guarantee_count: number;
+  before_potential_option: PotentialOption[];
+  before_additional_potential_option: PotentialOption[];
+  after_potential_option: PotentialOption[];
+  after_additional_potential_option: PotentialOption[];
+}
+
+/**
+ * 랭킹 정보 타입
+ * @see NEXON Open API - /maplestory/v1/ranking/*
+ */
+export interface RankingOverallType {
+  ranking: OverallRankEntry[];
+}
+
+export interface OverallRankEntry {
+  date: string;
+  ranking: number;
+  character_name: string;
+  world_name: string;
+  class_name: string;
+  sub_class_name: string;
+  character_level: number;
+  character_exp: number;
+  character_popularity: number;
+  character_guildname: string;
+}
+
+export interface RankingUnionType {
+  ranking: UnionRankEntry[];
+}
+
+export interface UnionRankEntry {
+  date: string;
+  ranking: number;
+  character_name: string;
+  world_name: string;
+  class_name: string;
+  sub_class_name: string;
+  union_level: number;
+  union_power: number;
+}
+
+export interface RankingGuildType {
+  ranking: GuildRankEntry[];
+}
+
+export interface GuildRankEntry {
+  date: string;
+  ranking: number;
+  guild_name: string;
+  world_name: string;
+  guild_level: number;
+  guild_master_name: string;
+  guild_mark: string;
+  guild_point: number;
+}
+
+export interface RankingDojangType {
+  ranking: DojangRankEntry[];
+}
+
+export interface DojangRankEntry {
+  date: string;
+  ranking: number;
+  character_name: string;
+  world_name: string;
+  class_name: string;
+  sub_class_name: string;
+  character_level: number;
+  dojang_floor: number;
+  dojang_time_record: number;
+}
+
+export interface RankingTheSeedType {
+  ranking: TheSeedRankEntry[];
+}
+
+export interface TheSeedRankEntry {
+  date: string;
+  ranking: number;
+  character_name: string;
+  world_name: string;
+  class_name: string;
+  sub_class_name: string;
+  character_level: number;
+  theseed_floor: number;
+  theseed_time_record: number;
+}
+
+export interface RankingAchievementType {
+  ranking: AchievementRankEntry[];
+}
+
+export interface AchievementRankEntry {
+  date: string;
+  ranking: number;
+  character_name: string;
+  world_name: string;
+  class_name: string;
+  sub_class_name: string;
+  trophy_grade: string;
+  trophy_score: number;
+}
+
+/**
+ * 공지 정보 타입
+ * @see NEXON Open API - /maplestory/v1/notice*
+ */
+export interface NoticeListType {
+  notice: NoticeEntry[];
+}
+
+export interface NoticeEntry {
+  title: string;
+  url: string;
+  notice_id: number;
+  date: string;
+}
+
+export interface NoticeDetailType {
+  title: string;
+  url: string;
+  contents: string;
+  date: string;
+}
+
+export interface UpdateNoticeListType {
+  update_notice: NoticeEntry[];
+}
+
+export interface EventNoticeListType {
+  event_notice: EventNoticeEntry[];
+}
+
+export interface EventNoticeEntry {
+  title: string;
+  url: string;
+  notice_id: number;
+  date: string;
+  date_event_start: string;
+  date_event_end: string;
+}
+
+export interface EventNoticeDetailType {
+  title: string;
+  url: string;
+  contents: string;
+  date: string;
+  date_event_start: string;
+  date_event_end: string;
+}
+
+export interface CashShopNoticeListType {
+  cashshop_notice: CashShopNoticeEntry[];
+}
+
+export interface CashShopNoticeEntry {
+  title: string;
+  url: string;
+  notice_id: number;
+  date: string;
+  date_sale_start: string;
+  date_sale_end: string;
+  ongoing_flag: string;
+}
+
+export interface CashShopNoticeDetailType {
+  title: string;
+  url: string;
+  contents: string;
+  date: string;
+  date_sale_start: string;
+  date_sale_end: string;
+  ongoing_flag: string;
+}
+
+/**
+ * 계정 업적 정보 타입
+ * @see NEXON Open API - /maplestory/v1/user/achievement
+ */
+export interface AccountAchievementType {
+  account_list: AccountAchievement[];
+}
+
+export interface AccountAchievement {
+  account_id: string;
+  achievement_achieve: AchievementEntry[];
+}
+
+export interface AchievementEntry {
+  achievement_name: string;
+  achievement_description: string;
 }
