@@ -44,6 +44,11 @@ const logoFont = localFont({
 const galmuriFont = localFont({
   src: [
     {
+      path: "../assets/fonts/Galmuri9.woff2",
+      weight: "100",
+      style: "normal",
+    },
+    {
       path: "../assets/fonts/Galmuri11.woff2",
       weight: "300",
       style: "normal",
@@ -88,7 +93,7 @@ export default async function RootLayout({
                     <Navbar />
                   </div>
                 </header>
-                <main className="flex-grow w-full lg:w-3/5 mx-auto px-4 py-8">
+                <main className="flex-grow w-full lg:w-3/5 mx-auto px-1 sm:px-4 py-4 sm:py-8">
                   {children}
                   <AuthGate />
                 </main>

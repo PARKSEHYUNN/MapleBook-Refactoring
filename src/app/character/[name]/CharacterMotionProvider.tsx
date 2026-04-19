@@ -55,6 +55,7 @@ export function CharacterHeaderImage({ alt }: { alt: string }) {
     <img
       src={motionUrl}
       alt={alt}
+      loading="eager"
       style={{
         transform: flipped ? "translateX(-50%) scale(-1, 1)" : "translateX(-50%) scale(1)",
       }}

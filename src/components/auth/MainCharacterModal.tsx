@@ -14,6 +14,7 @@ import Image from "next/image";
 
 import { CheckCircle, RotateCw, SkipForward, UserRound } from "lucide-react";
 
+import { BaseModal } from "@/components/ui/BaseModal";
 import type { CharacterList } from "@/types/character";
 
 interface MainCharacterModalProps {
@@ -58,8 +59,7 @@ export default function MainCharacterModal({
   const [selectedOcid, setSelectedOcid] = useState<string | null>(null);
 
   return (
-    <dialog className="modal modal-open" style={{ zIndex: 9999 }}>
-      <div className="modal-box max-w-md rounded-2xl p-6 flex flex-col gap-5">
+    <BaseModal boxClassName="max-w-md p-6 flex flex-col gap-5">
         {/* 헤더 */}
         <div className="flex justify-between me-3">
           <div>
@@ -150,7 +150,6 @@ export default function MainCharacterModal({
             설정하기
           </button>
         </div>
-      </div>
-    </dialog>
+    </BaseModal>
   );
 }

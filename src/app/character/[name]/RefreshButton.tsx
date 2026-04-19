@@ -29,6 +29,7 @@ export default function RefreshButton({
     try {
       await fetch(`/api/character/${encodeURIComponent(name)}/refresh`, { method: "POST" });
       router.refresh();
+      window.dispatchEvent(new CustomEvent("character-refreshed"));
     } finally {
       setLoading(false);
     }

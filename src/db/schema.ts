@@ -23,9 +23,11 @@ import { GuildSkill } from "@/types/guild";
 
 import {
   AbilityJsonType,
+  PotentialOptionGrade,
   AndroidEquipmentJsonType,
   BeautyEquipmentJsonType,
   CashEquipmentJsonType,
+  CharacterUnion,
   DojangJsonType,
   HexaMatrixJsonType,
   HexaStatJsonType,
@@ -40,6 +42,9 @@ import {
   SkillJsonType,
   StatJsonType,
   SymbolJsonType,
+  UnionArtifactType,
+  UnionChampionType,
+  UnionRaiderType,
   VMatrixJsonType,
 } from "../types/character";
 import {
@@ -109,6 +114,7 @@ export const characters = sqliteTable("characters", {
   combatPower: int("combat_power").default(0),
   unionLevel: int("unionLevel").default(0),
   unionGrade: text("unionGrade").$type<UnionGrade>().default("없음"),
+  unionJson: text("union_json", { mode: "json" }).$type<CharacterUnion>(),
   statJson: text("stat_json", { mode: "json" }).$type<StatJsonType>(),
   hyperStatJson: text("hyper_stat_json", { mode: "json" }).$type<HyperStatJsonType>(),
   propensityJson: text("propensity_json", { mode: "json" }).$type<PropensityJsonType>(),
@@ -132,6 +138,9 @@ export const characters = sqliteTable("characters", {
   ringReserveSkillJson: text("ring_reserve_skill_json", {
     mode: "json",
   }).$type<RingReserveSkillEquipmentJsonType>(),
+  unionRaiderJson: text("union_raider_json", { mode: "json" }).$type<UnionRaiderType>(),
+  unionArtifactJson: text("union_artifact_json", { mode: "json" }).$type<UnionArtifactType>(),
+  unionChampionJson: text("union_champion_json", { mode: "json" }).$type<UnionChampionType>(),
   defaultSettings: text("default_settings", { mode: "json" })
     .$type<DefaultSettingsJsonType>()
     .$defaultFn(() => DefaultSettings),
@@ -389,6 +398,22 @@ export const consentLogs = sqliteTable(
     userIdIdx: index("consent_logs_user_id_idx").on(table.userId),
   }),
 );
+
+/**
+ * 잠재능력 옵션 텍스트 → 등급 매핑을 저장하는 테이블입니다.
+ * @description
+ * 캐릭터 검색 시 잠재능력 1번 라인(항상 해당 등급)을 기준으로 누적합니다.
+ * 2, 3번 라인 등급 판별에 활용됩니다.
+ */
+export const potentialOptionGrades = sqliteTable("potential_option_grades", {
+  optionText: text("option_text").primaryKey(),
+  grade: text("grade").notNull().$type<PotentialOptionGrade>(),
+  seenCount: int("seen_count").notNull().default(1),
+  updatedAt: text("updated_at")
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`)
+    .$onUpdate(() => sql`CURRENT_TIMESTAMP`),
+});
 
 export const loginHistory = sqliteTable("login_history", {
   id: int("id").primaryKey({ autoIncrement: true }),

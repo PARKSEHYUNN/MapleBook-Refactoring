@@ -12,10 +12,11 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
-import { eq, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 
 import { getDb } from "@/db";
-import { characters } from "@/db/schema";
+import { characterSnapshots, characters, potentialOptionGrades } from "@/db/schema";
+import { SnapshotJsonType } from "@/types/user";
 import { logger } from "@/lib/logger";
 import {
   getCharacterBasic,
@@ -25,6 +26,9 @@ import {
   getCharacterPopularity,
   getCharacterStat,
   getCharacterUnion,
+  getUnionArtifact,
+  getUnionChampion,
+  getUnionRaider,
 } from "@/lib/nexon";
 
 /**
@@ -117,13 +121,16 @@ export async function characterRefreshHandler(_request: NextRequest, name: strin
     }
 
     // NEXON API 병렬 호출
-    const [basic, popularity, stat, union, dojang, equipment] = await Promise.all([
+    const [basic, popularity, stat, union, dojang, equipment, unionRaider, unionArtifact, unionChampion] = await Promise.all([
       getCharacterBasic(character.ocid).catch(() => null),
       getCharacterPopularity(character.ocid).catch(() => null),
       getCharacterStat(character.ocid).catch(() => null),
       getCharacterUnion(character.ocid).catch(() => null),
       getCharacterDojang(character.ocid).catch(() => null),
       getCharacterItemEquipment(character.ocid).catch(() => null),
+      getUnionRaider(character.ocid).catch(() => null),
+      getUnionArtifact(character.ocid).catch(() => null),
+      getUnionChampion(character.ocid).catch(() => null),
     ]);
 
     // Hard Rule 7: basic 실패 시 캐시 데이터 반환
@@ -134,6 +141,68 @@ export async function characterRefreshHandler(_request: NextRequest, name: strin
         .from(characters)
         .where(eq(characters.id, character.id));
       return NextResponse.json({ data: cached }, { status: 200 });
+    }
+
+    // 챔피언 이름으로 DB 조회 → 없으면 NEXON API로 보완 → champion_image 첨부
+    let enrichedUnionChampion = unionChampion;
+    if (unionChampion?.union_champion?.length) {
+      const names = unionChampion.union_champion.map((c) => c.champion_name);
+      const rows = await db
+        .select({ characterName: characters.characterName, characterImage: characters.characterImage, characterLevel: characters.characterLevel })
+        .from(characters)
+        .where(inArray(characters.characterName, names))
+        .catch(() => []);
+      const imageMap = new Map(rows.map((r) => [r.characterName, r.characterImage]));
+      const levelMap = new Map(rows.map((r) => [r.characterName, r.characterLevel]));
+
+      const missing = names.filter((n) => !imageMap.has(n));
+      if (missing.length > 0) {
+        await Promise.allSettled(
+          missing.map(async (champName) => {
+            const ocid = await getCharacterOcid(champName).catch(() => null);
+            if (!ocid) { return; }
+            const champBasic = await getCharacterBasic(ocid).catch(() => null);
+            if (!champBasic) { return; }
+            imageMap.set(champName, champBasic.character_image);
+            levelMap.set(champName, champBasic.character_level);
+          }),
+        );
+      }
+
+      enrichedUnionChampion = {
+        ...unionChampion,
+        union_champion: unionChampion.union_champion.map((c) => ({
+          ...c,
+          champion_image: imageMap.get(c.champion_name) ?? null,
+          champion_level: levelMap.get(c.champion_name) ?? null,
+        })),
+      };
+    }
+
+    // 잠재능력 1번 라인 → 등급 누적 (best-effort)
+    if (equipment?.item_equipment) {
+      for (const eq of equipment.item_equipment) {
+        if (eq.potential_option_1 && eq.potential_option_grade) {
+          await db
+            .insert(potentialOptionGrades)
+            .values({ optionText: eq.potential_option_1, grade: eq.potential_option_grade })
+            .onConflictDoUpdate({
+              target: potentialOptionGrades.optionText,
+              set: { seenCount: sql`${potentialOptionGrades.seenCount} + 1` },
+            })
+            .catch(() => null);
+        }
+        if (eq.additional_potential_option_1 && eq.additional_potential_option_grade) {
+          await db
+            .insert(potentialOptionGrades)
+            .values({ optionText: eq.additional_potential_option_1, grade: eq.additional_potential_option_grade })
+            .onConflictDoUpdate({
+              target: potentialOptionGrades.optionText,
+              set: { seenCount: sql`${potentialOptionGrades.seenCount} + 1` },
+            })
+            .catch(() => null);
+        }
+      }
     }
 
     const [updated] = await db
@@ -149,14 +218,104 @@ export async function characterRefreshHandler(_request: NextRequest, name: strin
         popularity: popularity?.popularity ?? undefined,
         unionLevel: union?.union_level ?? undefined,
         unionGrade: union?.union_grade ?? undefined,
+        unionJson: union ?? undefined,
+        combatPower: stat
+          ? parseInt(
+              stat.final_stat.find((s) => s.stat_name === "전투력")?.stat_value ?? "0",
+              10,
+            ) || 0
+          : undefined,
         statJson: stat ?? undefined,
         dojangJson: dojang ?? undefined,
         equipmentJson: equipment ?? undefined,
+        unionRaiderJson: unionRaider ?? undefined,
+        unionArtifactJson: unionArtifact ?? undefined,
+        unionChampionJson: enrichedUnionChampion ?? undefined,
         syncedAt: sql`CURRENT_TIMESTAMP`,
         isIncomplete: false,
       })
       .where(eq(characters.id, character.id))
       .returning();
+
+    // 오늘(KST) 스냅샷 upsert
+    const kstNow = new Date(Date.now() + 9 * 60 * 60 * 1000);
+    const today = kstNow.toISOString().slice(0, 10);
+
+    // 30일 미만이면 누락된 날짜만 백필
+    const existingDates = await db
+      .select({ snapshotDate: characterSnapshots.snapshotDate })
+      .from(characterSnapshots)
+      .where(eq(characterSnapshots.characterId, character.id))
+      .catch(() => [] as { snapshotDate: string }[]);
+    const existingDateSet = new Set(existingDates.map((r) => r.snapshotDate));
+    const allPastDates = Array.from({ length: 29 }, (_, i) => {
+      const d = new Date(kstNow.getTime() - (i + 1) * 24 * 60 * 60 * 1000);
+      return d.toISOString().slice(0, 10);
+    });
+    const missingDates = allPastDates.filter((d) => !existingDateSet.has(d));
+    if (missingDates.length > 0) {
+      await Promise.allSettled(
+        missingDates.map(async (date) => {
+          const [bBasic, bStat, bUnion, bPop] = await Promise.all([
+            getCharacterBasic(character.ocid, date).catch(() => null),
+            getCharacterStat(character.ocid, date).catch(() => null),
+            getCharacterUnion(character.ocid, date).catch(() => null),
+            getCharacterPopularity(character.ocid, date).catch(() => null),
+          ]);
+          if (!bBasic) { return; }
+          const data: SnapshotJsonType = {
+            character_level: bBasic.character_level,
+            character_exp_rate: parseFloat(bBasic.character_exp_rate) || 0,
+            character_guild_name: bBasic.character_guild_name ?? null,
+            character_image: bBasic.character_image,
+            combat_power: bStat
+              ? parseInt(bStat.final_stat.find((s) => s.stat_name === "전투력")?.stat_value ?? "0", 10) || 0
+              : 0,
+            union_level: bUnion?.union_level ?? 0,
+            union_grade: bUnion?.union_grade ?? "없음",
+            popularity: bPop?.popularity ?? 0,
+          };
+          await db
+            .insert(characterSnapshots)
+            .values({ characterId: character.id, ocid: character.ocid, snapshotData: data, snapshotDate: date })
+            .catch(() => null);
+        }),
+      );
+    }
+    const snapshotData: SnapshotJsonType = {
+      character_level: basic.character_level,
+      character_exp_rate: parseFloat(basic.character_exp_rate) || 0,
+      character_guild_name: basic.character_guild_name ?? null,
+      character_image: basic.character_image,
+      combat_power: stat
+        ? parseInt(stat.final_stat.find((s) => s.stat_name === "전투력")?.stat_value ?? "0", 10) || 0
+        : 0,
+      union_level: union?.union_level ?? 0,
+      union_grade: union?.union_grade ?? "없음",
+      popularity: popularity?.popularity ?? 0,
+    };
+    const [existingSnap] = await db
+      .select({ id: characterSnapshots.id })
+      .from(characterSnapshots)
+      .where(
+        and(
+          eq(characterSnapshots.characterId, character.id),
+          eq(characterSnapshots.snapshotDate, today),
+        ),
+      )
+      .catch(() => []);
+    if (existingSnap) {
+      await db
+        .update(characterSnapshots)
+        .set({ snapshotData })
+        .where(eq(characterSnapshots.id, existingSnap.id))
+        .catch(() => null);
+    } else {
+      await db
+        .insert(characterSnapshots)
+        .values({ characterId: character.id, ocid: character.ocid, snapshotData, snapshotDate: today })
+        .catch(() => null);
+    }
 
     logger.info("CharacterAPI", "캐릭터 갱신 완료", { name });
     return NextResponse.json({ data: updated }, { status: 200 });

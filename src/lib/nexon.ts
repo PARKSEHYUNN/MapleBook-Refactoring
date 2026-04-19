@@ -141,32 +141,28 @@ export async function getCharacterOcid(characterName: string) {
   return data.ocid;
 }
 
-export async function getCharacterBasic(ocid: string) {
-  const data = await nexonFetch<CharacterBasic>({
-    endpoint: `/maplestory/v1/character/basic?ocid=${ocid}`,
-  });
-  return data;
+export async function getCharacterBasic(ocid: string, date?: string) {
+  const q = new URLSearchParams({ ocid });
+  if (date) { q.set("date", date); }
+  return nexonFetch<CharacterBasic>({ endpoint: `/maplestory/v1/character/basic?${q}` });
 }
 
-export async function getCharacterPopularity(ocid: string) {
-  const data = await nexonFetch<CharacterPopularity>({
-    endpoint: `/maplestory/v1/character/popularity?ocid=${ocid}`,
-  });
-  return data;
+export async function getCharacterPopularity(ocid: string, date?: string) {
+  const q = new URLSearchParams({ ocid });
+  if (date) { q.set("date", date); }
+  return nexonFetch<CharacterPopularity>({ endpoint: `/maplestory/v1/character/popularity?${q}` });
 }
 
-export async function getCharacterStat(ocid: string) {
-  const data = await nexonFetch<StatJsonType>({
-    endpoint: `/maplestory/v1/character/stat?ocid=${ocid}`,
-  });
-  return data;
+export async function getCharacterStat(ocid: string, date?: string) {
+  const q = new URLSearchParams({ ocid });
+  if (date) { q.set("date", date); }
+  return nexonFetch<StatJsonType>({ endpoint: `/maplestory/v1/character/stat?${q}` });
 }
 
-export async function getCharacterUnion(ocid: string) {
-  const data = await nexonFetch<CharacterUnion>({
-    endpoint: `/maplestory/v1/user/union?ocid=${ocid}`,
-  });
-  return data;
+export async function getCharacterUnion(ocid: string, date?: string) {
+  const q = new URLSearchParams({ ocid });
+  if (date) { q.set("date", date); }
+  return nexonFetch<CharacterUnion>({ endpoint: `/maplestory/v1/user/union?${q}` });
 }
 
 export async function getCharacterDojang(ocid: string) {

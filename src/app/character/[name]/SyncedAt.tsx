@@ -14,7 +14,7 @@ function calcRelativeTime(syncedAt: string): string {
 }
 
 export default function SyncedAt({ syncedAt }: { syncedAt: string }) {
-  const [label, setLabel] = useState(() => calcRelativeTime(syncedAt));
+  const [label, setLabel] = useState("");
 
   useEffect(() => {
     setLabel(calcRelativeTime(syncedAt));

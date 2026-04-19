@@ -14,6 +14,8 @@ import { useState } from "react";
 import { LoaderCircle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
+import { BaseModal } from "@/components/ui/BaseModal";
+
 import { TERMS_VERSION } from "@/constants/terms";
 import privacyContent from "@/legal/privacy.md";
 import termsContent from "@/legal/terms.md";
@@ -62,8 +64,7 @@ export default function ConsentModal({ onNext, isLoading, mainCharacterId }: Con
   };
 
   return (
-    <dialog className="modal modal-open" style={{ zIndex: 9999 }}>
-      <div className="modal-box max-w-2xl rounded-2xl p-6 flex flex-col gap-4 h-[90vh] max-h-[90vh]">
+    <BaseModal boxClassName="max-w-2xl p-6 flex flex-col gap-4 h-[90vh] max-h-[90vh]">
         {/* 헤더 */}
         <div>
           <h2 className="text-lg font-bold">서비스 이용 약관 동의</h2>
@@ -135,7 +136,6 @@ export default function ConsentModal({ onNext, isLoading, mainCharacterId }: Con
           {isLoading && <LoaderCircle className="h-4 w-4 animate-spin" />}
           {isLoading ? "처리 중..." : mainCharacterId !== undefined ? "동의하고 계속하기" : "다음"}
         </button>
-      </div>
-    </dialog>
+    </BaseModal>
   );
 }

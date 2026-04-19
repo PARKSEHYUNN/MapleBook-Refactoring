@@ -47,6 +47,7 @@ export default function NavbarAuth({ dropdownAlign = "end" }: NavbarAuthProps) {
             src={imageUrl}
             alt="대표 캐릭터"
             fill
+            sizes="40px"
             className="object-cover scale-[4.5] translate-y-[0%]"
           />
         </div>

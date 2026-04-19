@@ -835,14 +835,16 @@ export interface UnionChampionType {
 
 export interface UnionChampionEntry {
   champion_name: string;
-  champion_slot: string;
+  champion_slot: number;
   champion_grade: string;
   champion_class: string;
-  champion_badge_info: { badge_stat: string }[];
+  champion_image: string | null;
+  champion_level?: number | null;
+  champion_badge_info: { stat: string }[];
 }
 
 export interface ChampionBadgeTotalInfo {
-  stat_description: string;
+  stat: string;
 }
 
 /**

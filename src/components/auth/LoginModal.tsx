@@ -13,7 +13,8 @@ import { useState } from "react";
 
 import { ChevronDown, Eye, EyeOff, HelpCircle, LoaderCircle, LogIn, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { createPortal } from "react-dom";
+
+import { BaseModal } from "@/components/ui/BaseModal";
 
 export default function LoginModal() {
   const [open, setOpen] = useState(false);
@@ -78,12 +79,8 @@ export default function LoginModal() {
         로그인
       </button>
 
-      {/* 모달: body에 포털로 렌더링하여 header z-index 스태킹 컨텍스트 탈출 */}
-      {open &&
-        createPortal(
-          <dialog className="modal modal-open" style={{ zIndex: 9999 }}>
-            {/* 모달 박스 */}
-            <div className="modal-box max-w-sm rounded-2xl p-6">
+      {open && (
+        <BaseModal boxClassName="max-w-sm p-6" onBackdropClick={() => !isLoading && setOpen(false)} portal>
               {/* 헤더 */}
               <div className="mb-5 flex items-center justify-between">
                 <h2 className="text-lg font-bold">로그인</h2>
@@ -203,13 +200,8 @@ export default function LoginModal() {
                   {isLoading ? "로그인 중..." : "로그인"}
                 </button>
               </div>
-            </div>
-
-            {/* 백드롭 */}
-            <div className="modal-backdrop" onClick={() => !isLoading && setOpen(false)} />
-          </dialog>,
-          document.body,
-        )}
+        </BaseModal>
+      )}
     </>
   );
 }

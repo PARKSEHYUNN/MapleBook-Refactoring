@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useState } from "react";
 
 import { Check, FlipHorizontal2, ImageIcon, Settings, SlidersHorizontal, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { createPortal } from "react-dom";
+
+import { BaseModal } from "@/components/ui/BaseModal";
 
 import {
   ACTION_FRAMES,
@@ -13,6 +14,7 @@ import {
   EMOTIONS,
   WMOTIONS,
 } from "@/constants/character-motion";
+import { useAsyncAction } from "@/hooks/useAsyncAction";
 
 type Tab = "motion" | "theme" | "personal";
 
@@ -105,18 +107,10 @@ export default function CharacterSettingsModal({
   const [bio, setBio] = useState(initialBio ?? "");
   const [reviewNotification, setReviewNotification] = useState(initialReviewNotification);
 
-  const [motionPending, startMotionTransition] = useTransition();
-  const [themePending, startThemeTransition] = useTransition();
-  const [personalPending, startPersonalTransition] = useTransition();
-  const [mainPending, startMainTransition] = useTransition();
-  const [motionError, setMotionError] = useState<string | null>(null);
-  const [motionSuccess, setMotionSuccess] = useState(false);
-  const [themeError, setThemeError] = useState<string | null>(null);
-  const [themeSuccess, setThemeSuccess] = useState(false);
-  const [personalError, setPersonalError] = useState<string | null>(null);
-  const [personalSuccess, setPersonalSuccess] = useState(false);
-  const [mainError, setMainError] = useState<string | null>(null);
-  const [mainSuccess, setMainSuccess] = useState(false);
+  const motionAction = useAsyncAction();
+  const themeAction = useAsyncAction();
+  const personalAction = useAsyncAction();
+  const mainAction = useAsyncAction();
 
   const actionMaxFrame = ACTION_FRAMES[action] ?? 0;
   const emotionMaxFrame = EMOTION_FRAMES[emotion] ?? 0;
@@ -157,83 +151,52 @@ export default function CharacterSettingsModal({
     setEmotionFrame(0);
     setWmotion("W00");
     setFlipped(false);
-    setMotionError(null);
-    setMotionSuccess(false);
+    motionAction.reset();
   }
 
   function handleMotionSave() {
-    setMotionError(null);
-    setMotionSuccess(false);
-    startMotionTransition(async () => {
-      try {
-        await patchSettings({ action, actionFrame, emotion, emotionFrame, wmotion, flip: flipped });
-        setMotionSuccess(true);
-        router.refresh();
-      } catch (e) {
-        setMotionError(e instanceof Error ? e.message : "저장에 실패했습니다.");
-      }
+    motionAction.run(async () => {
+      await patchSettings({ action, actionFrame, emotion, emotionFrame, wmotion, flip: flipped });
+      router.refresh();
     });
   }
 
   function handleThemeReset() {
     setBackground(initialBackground);
     setTheme(initialTheme);
-    setThemeError(null);
-    setThemeSuccess(false);
+    themeAction.reset();
   }
 
   function handleThemeSave() {
-    setThemeError(null);
-    setThemeSuccess(false);
-    startThemeTransition(async () => {
-      try {
-        await patchSettings({ background, theme });
-        setThemeSuccess(true);
-        router.refresh();
-      } catch (e) {
-        setThemeError(e instanceof Error ? e.message : "저장에 실패했습니다.");
-      }
+    themeAction.run(async () => {
+      await patchSettings({ background, theme });
+      router.refresh();
     });
   }
 
   function handlePersonalReset() {
     setBio(initialBio ?? "");
     setReviewNotification(initialReviewNotification);
-    setPersonalError(null);
-    setPersonalSuccess(false);
+    personalAction.reset();
   }
 
   function handlePersonalSave() {
-    setPersonalError(null);
-    setPersonalSuccess(false);
-    startPersonalTransition(async () => {
-      try {
-        await patchSettings({ bio, reviewNotification });
-        setPersonalSuccess(true);
-        router.refresh();
-      } catch (e) {
-        setPersonalError(e instanceof Error ? e.message : "저장에 실패했습니다.");
-      }
+    personalAction.run(async () => {
+      await patchSettings({ bio, reviewNotification });
+      router.refresh();
     });
   }
 
   function handleSetMain() {
-    setMainError(null);
-    setMainSuccess(false);
-    startMainTransition(async () => {
-      try {
-        const res = await fetch(`/api/character/${encodeURIComponent(characterName)}/set-main`, {
-          method: "POST",
-        });
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error((data as { error?: string }).error ?? "대표 캐릭터 설정에 실패했습니다.");
-        }
-        setMainSuccess(true);
-        router.refresh();
-      } catch (e) {
-        setMainError(e instanceof Error ? e.message : "대표 캐릭터 설정에 실패했습니다.");
+    mainAction.run(async () => {
+      const res = await fetch(`/api/character/${encodeURIComponent(characterName)}/set-main`, {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error((data as { error?: string }).error ?? "대표 캐릭터 설정에 실패했습니다.");
       }
+      router.refresh();
     });
   }
 
@@ -249,10 +212,8 @@ export default function CharacterSettingsModal({
       </button>
 
       {/* 모달 */}
-      {open &&
-        createPortal(
-          <dialog className="modal modal-open" style={{ zIndex: 9999 }}>
-            <div className="modal-box max-w-md rounded-2xl p-0 overflow-hidden">
+      {open && (
+        <BaseModal boxClassName="max-w-md p-0 overflow-hidden" onBackdropClick={() => setOpen(false)} portal>
               {/* 헤더 */}
               <div className="flex items-center justify-between px-5 pt-5 pb-4">
                 <h2 className="text-lg font-bold">캐릭터 설정</h2>
@@ -396,22 +357,22 @@ export default function CharacterSettingsModal({
 
                     {/* 구분선 + 버튼 */}
                     <div className="border-t border-base-300 pt-4">
-                      {motionError && <p className="mb-3 text-xs text-error">{motionError}</p>}
-                      {motionSuccess && <p className="mb-3 text-xs text-success">저장되었습니다.</p>}
+                      {motionAction.error && <p className="mb-3 text-xs text-error">{motionAction.error}</p>}
+                      {motionAction.success && <p className="mb-3 text-xs text-success">저장되었습니다.</p>}
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={handleMotionReset}
-                          disabled={motionPending}
+                          disabled={motionAction.pending}
                           className="btn btn-sm btn-ghost border border-base-300"
                         >
                           리셋
                         </button>
                         <button
                           onClick={handleMotionSave}
-                          disabled={motionPending}
+                          disabled={motionAction.pending}
                           className="btn btn-sm btn-primary"
                         >
-                          {motionPending ? (
+                          {motionAction.pending ? (
                             <span className="loading loading-spinner loading-xs" />
                           ) : (
                             "저장"
@@ -509,22 +470,22 @@ export default function CharacterSettingsModal({
 
                     {/* 구분선 + 버튼 */}
                     <div className="border-t border-base-300 pt-1">
-                      {themeError && <p className="mb-3 text-xs text-error">{themeError}</p>}
-                      {themeSuccess && <p className="mb-3 text-xs text-success">저장되었습니다.</p>}
+                      {themeAction.error && <p className="mb-3 text-xs text-error">{themeAction.error}</p>}
+                      {themeAction.success && <p className="mb-3 text-xs text-success">저장되었습니다.</p>}
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={handleThemeReset}
-                          disabled={themePending}
+                          disabled={themeAction.pending}
                           className="btn btn-sm btn-ghost border border-base-300"
                         >
                           리셋
                         </button>
                         <button
                           onClick={handleThemeSave}
-                          disabled={themePending}
+                          disabled={themeAction.pending}
                           className="btn btn-sm btn-primary"
                         >
-                          {themePending ? (
+                          {themeAction.pending ? (
                             <span className="loading loading-spinner loading-xs" />
                           ) : (
                             "저장"
@@ -552,18 +513,18 @@ export default function CharacterSettingsModal({
                         </div>
                         <button
                           onClick={handleSetMain}
-                          disabled={characterLevel < 265 || mainPending}
+                          disabled={characterLevel < 265 || mainAction.pending}
                           className="btn btn-sm btn-primary"
                         >
-                          {mainPending ? (
+                          {mainAction.pending ? (
                             <span className="loading loading-spinner loading-xs" />
                           ) : (
                             "설정"
                           )}
                         </button>
                       </div>
-                      {mainError && <p className="text-xs text-error">{mainError}</p>}
-                      {mainSuccess && (
+                      {mainAction.error && <p className="text-xs text-error">{mainAction.error}</p>}
+                      {mainAction.success && (
                         <p className="text-xs text-success">대표 캐릭터로 설정되었습니다.</p>
                       )}
                     </div>
@@ -611,24 +572,24 @@ export default function CharacterSettingsModal({
 
                     {/* 구분선 + 버튼 */}
                     <div className="border-t border-base-300 pt-1">
-                      {personalError && <p className="mb-3 text-xs text-error">{personalError}</p>}
-                      {personalSuccess && (
+                      {personalAction.error && <p className="mb-3 text-xs text-error">{personalAction.error}</p>}
+                      {personalAction.success && (
                         <p className="mb-3 text-xs text-success">저장되었습니다.</p>
                       )}
                       <div className="flex justify-end gap-2">
                         <button
                           onClick={handlePersonalReset}
-                          disabled={personalPending}
+                          disabled={personalAction.pending}
                           className="btn btn-sm btn-ghost border border-base-300"
                         >
                           리셋
                         </button>
                         <button
                           onClick={handlePersonalSave}
-                          disabled={personalPending}
+                          disabled={personalAction.pending}
                           className="btn btn-sm btn-primary"
                         >
-                          {personalPending ? (
+                          {personalAction.pending ? (
                             <span className="loading loading-spinner loading-xs" />
                           ) : (
                             "저장"
@@ -639,13 +600,8 @@ export default function CharacterSettingsModal({
                   </div>
                 )}
               </div>
-            </div>
-
-            {/* 백드롭 */}
-            <div className="modal-backdrop" onClick={() => setOpen(false)} />
-          </dialog>,
-          document.body,
-        )}
+        </BaseModal>
+      )}
     </>
   );
 }
